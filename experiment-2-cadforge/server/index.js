@@ -116,6 +116,12 @@ const ScadResponseSchema = z.object({
   scad_code: z.string()
 });
 
+const CadQueryResponseSchema = z.object({
+  rationale: z.string(),
+  cadquery_code: z.string(),
+  expected_features: z.array(z.string()).default([])
+});
+
 const DesignSchema = z.object({
   title: z.string(),
   rationale: z.string(),
@@ -1979,6 +1985,54 @@ function cleanScadCode(value = "") {
     .trim();
 }
 
+function cadquerySystemPrompt() {
+  return [
+    "You are CADForge CadQuery, a careful Python CadQuery code generator for real mechanical CAD.",
+    "Return executable CadQuery Python code, not pseudocode.",
+    "Use CadQuery as cq. You may include `import cadquery as cq`, `from cadquery import exporters`, and `import math`; the runner already provides cq, exporters, and math.",
+    "Do not use file IO, network, subprocesses, OS APIs, random external imports, or shell commands.",
+    "Do not call exporters.export; the backend runner exports the final object.",
+    "Assign the final exportable CadQuery object to a variable named `fixture`.",
+    "Use real CadQuery features such as workplanes, sketches, extrude, revolve, cskHole, fillet, chamfer, union, cut, and clean when useful.",
+    "Prefer parameterized code with named dimensions at the top.",
+    "For wall-mounted J hooks, use the known-stable pattern: base plate as a filleted box with cskHole mounting holes, hook body as a closed 2D profile on the YZ plane extruded with both=True, triangular gussets as closed YZ profiles extruded with both=True, then fixture = base.union(hook).union(gussets).",
+    "Avoid fragile sweep paths for hooks unless absolutely necessary; CadQuery threePointArc inside a closed planar profile is more reliable than sweep for this app.",
+    "Do not use try/except blocks in generated code. Produce straightforward code that either runs or gives a clear verifier error.",
+    "Generate a single coherent part suitable for STL export."
+  ].join("\n");
+}
+
+function cleanCadqueryCode(value = "") {
+  return String(value)
+    .replace(/^```(?:python|py)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
+}
+
+async function generateCadqueryWithModel({ prompt }) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is missing. Real CadQuery generation requires a configured model API key.");
+  }
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const response = await client.responses.parse({
+    model: process.env.MODEL_NAME || "gpt-5.4",
+    input: [
+      { role: "system", content: cadquerySystemPrompt() },
+      { role: "user", content: prompt }
+    ],
+    text: {
+      format: zodTextFormat(CadQueryResponseSchema, "cadquery_generation")
+    }
+  });
+  return {
+    ...response.output_parsed,
+    cadquery_code: cleanCadqueryCode(response.output_parsed.cadquery_code),
+    model: process.env.MODEL_NAME || "gpt-5.4",
+    system: cadquerySystemPrompt(),
+    user: prompt
+  };
+}
+
 async function generateScadWithModel({ prompt, previousScad = "", renderStats = null }) {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is missing. Real SCAD generation requires a configured model API key.");
@@ -2455,6 +2509,112 @@ app.post("/api/cadquery/sample-hook", async (req, res) => {
       stderr: result.stderr
     });
   }
+});
+
+function cadqueryResultToResponse({ result, startedAt, source }) {
+  if (result.error) {
+    return {
+      status: 500,
+      body: {
+        error: result.error.message,
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+
+  if (result.status !== 0) {
+    return {
+      status: 500,
+      body: {
+        error: `CadQuery exited with status ${result.status}`,
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+
+  try {
+    const lines = String(result.stdout || "").trim().split(/\r?\n/).filter(Boolean);
+    const payload = JSON.parse(lines[lines.length - 1] || "{}");
+    const stl = readFileSync(payload.stl_path);
+    return {
+      status: 200,
+      body: {
+        source,
+        elapsed_ms: Date.now() - startedAt,
+        ...payload,
+        stl_base64: stl.toString("base64"),
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        error: error instanceof Error ? error.message : "Failed to read CadQuery STL output.",
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+}
+
+app.get("/api/cadquery/sample-code", (req, res) => {
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_samples", "heavy_duty_hook_query.py");
+  try {
+    res.json({
+      source: "cadquery_sample_code",
+      cadquery_code: readFileSync(scriptPath, "utf8")
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not read CadQuery sample code." });
+  }
+});
+
+app.post("/api/cadquery/generate", async (req, res) => {
+  loadEnv();
+  const prompt = String(req.body?.prompt || "").trim();
+  if (!prompt) {
+    res.status(400).json({ error: "Prompt is required." });
+    return;
+  }
+  try {
+    const result = await generateCadqueryWithModel({ prompt });
+    res.json({ source: "openai_cadquery_generator", ...result });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Unknown CadQuery generation error" });
+  }
+});
+
+app.post("/api/cadquery/render-code", async (req, res) => {
+  loadEnv();
+  const code = String(req.body?.cadquery_code || "").trim();
+  const features = Array.isArray(req.body?.features) ? req.body.features.map(String) : [];
+  if (!code) {
+    res.status(400).json({ error: "CadQuery code is required." });
+    return;
+  }
+
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_code_runner.py");
+  const outDir = path.join(appRoot, "runs", "cadquery-generated");
+  const pythonPath = path.join(appRoot, "python_tools");
+  const startedAt = Date.now();
+  const result = spawnSync(pythonBin, [scriptPath, "--out-dir", outDir, "--name", "generated_cadquery"], {
+    cwd: appRoot,
+    input: JSON.stringify({ code, features }),
+    encoding: "utf8",
+    timeout: 120000,
+    env: {
+      ...process.env,
+      PYTHONPATH: pythonPath,
+      XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+    }
+  });
+
+  const response = cadqueryResultToResponse({ result, startedAt, source: "cadquery_code_runner" });
+  res.status(response.status).json(response.body);
 });
 
 app.listen(port, () => {

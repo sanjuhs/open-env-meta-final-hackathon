@@ -71,15 +71,23 @@ app.innerHTML = `
 
       <section class="scad-lab ${isCadQueryPage ? "" : "hidden"}">
         <div class="scad-lab-head">
-          <label for="cadquery-code">CadQuery sample</label>
-          <span>real Python CadQuery -> STL</span>
+          <label for="cadquery-prompt">CadQuery prompt</label>
+          <span>GPT-5.4 -> Python CadQuery -> STL</span>
         </div>
-        <textarea id="cadquery-code" spellcheck="false" readonly>base = cq.Workplane("XY").box(...).edges("|Z").fillet(...)
-base.faces(">Z").workplane().pushPoints(...).cskHole(...)
-hook = cq.Workplane("YZ").moveTo(...).threePointArc(...).extrude(...)
-fixture = base.union(hook).union(bottom_gusset).union(top_gusset)
-cq.exporters.export(fixture, "heavy_duty_hook.stl")</textarea>
-        <button id="render-cadquery" class="primary generate-only">Render CadQuery Hook</button>
+        <textarea id="cadquery-prompt" spellcheck="false">Design a simple 6061 aluminum wall-mounted J hook for a 120 N downward hanging load at the hook tip. It should have a filleted wall plate, four countersunk mounting holes, a curved J hook arm, and triangular gussets. Generate clean parametric CadQuery code.</textarea>
+        <button id="generate-cadquery" class="primary generate-only">Generate</button>
+      </section>
+
+      <section class="scad-lab ${isCadQueryPage ? "" : "hidden"}">
+        <div class="scad-lab-head">
+          <label for="cadquery-code">CadQuery code</label>
+          <span>edit then render real STL</span>
+        </div>
+        <textarea id="cadquery-code" spellcheck="false">Loading sample CadQuery code...</textarea>
+        <div class="button-row">
+          <button id="render-cadquery" class="primary">Render</button>
+          <button id="load-cadquery-sample">Load Sample</button>
+        </div>
         <div id="cadquery-output" class="scad-output">Backend will run the real CadQuery sample and return an STL mesh.</div>
       </section>
 
@@ -129,7 +137,11 @@ const iterateScadButton = document.querySelector("#iterate-scad");
 const renderScadButton = document.querySelector("#render-scad");
 const loadScadExampleButton = document.querySelector("#load-scad-example");
 const scadOutputEl = document.querySelector("#scad-output");
+const cadqueryPromptInput = document.querySelector("#cadquery-prompt");
+const cadqueryCodeInput = document.querySelector("#cadquery-code");
+const generateCadqueryButton = document.querySelector("#generate-cadquery");
 const renderCadqueryButton = document.querySelector("#render-cadquery");
+const loadCadquerySampleButton = document.querySelector("#load-cadquery-sample");
 const cadqueryOutputEl = document.querySelector("#cadquery-output");
 const agentStepsEl = document.querySelector("#agent-steps");
 const toolBudgetInput = document.querySelector("#tool-budget");
@@ -326,7 +338,7 @@ function renderCadqueryStl(result) {
 }
 
 async function renderCadquerySample() {
-  setStatus("Running CadQuery backend and exporting STL...", "working");
+  setStatus("Running fixed CadQuery sample and exporting STL...", "working");
   if (renderCadqueryButton) renderCadqueryButton.disabled = true;
   try {
     const response = await fetch("/api/cadquery/sample-hook", { method: "POST" });
@@ -340,6 +352,82 @@ async function renderCadquerySample() {
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "CadQuery render failed.", "error");
   } finally {
+    if (renderCadqueryButton) renderCadqueryButton.disabled = false;
+  }
+}
+
+async function loadCadquerySampleCode({ render = false } = {}) {
+  setStatus("Loading CadQuery sample code...", "working");
+  try {
+    const response = await fetch("/api/cadquery/sample-code");
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "Could not load CadQuery sample.", "error");
+      return;
+    }
+    cadqueryCodeInput.value = result.cadquery_code || "";
+    cadqueryOutputEl.textContent = "Loaded the real heavy-duty hook CadQuery sample.";
+    setStatus("Loaded CadQuery sample code.", "ok");
+    if (render) await renderCadqueryCode();
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Could not load CadQuery sample.", "error");
+  }
+}
+
+async function renderCadqueryCode() {
+  setStatus("Running CadQuery code and exporting STL...", "working");
+  if (renderCadqueryButton) renderCadqueryButton.disabled = true;
+  if (generateCadqueryButton) generateCadqueryButton.disabled = true;
+  try {
+    const response = await fetch("/api/cadquery/render-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cadquery_code: cadqueryCodeInput.value })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery render failed.", "error");
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return false;
+    }
+    renderCadqueryStl(result);
+    return true;
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery render failed.", "error");
+    return false;
+  } finally {
+    if (renderCadqueryButton) renderCadqueryButton.disabled = false;
+    if (generateCadqueryButton) generateCadqueryButton.disabled = false;
+  }
+}
+
+async function generateCadqueryCode() {
+  setStatus("Asking GPT-5.4 to generate CadQuery code...", "working");
+  if (generateCadqueryButton) generateCadqueryButton.disabled = true;
+  if (renderCadqueryButton) renderCadqueryButton.disabled = true;
+  try {
+    const response = await fetch("/api/cadquery/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: cadqueryPromptInput.value })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery generation failed.", "error");
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return;
+    }
+    cadqueryCodeInput.value = result.cadquery_code || "";
+    cadqueryOutputEl.textContent = result.rationale || "Generated CadQuery code.";
+    jsonEl.textContent = JSON.stringify({ ...result, cadquery_code: "<shown in editor>" }, null, 2);
+    const rendered = await renderCadqueryCode();
+    if (!rendered) {
+      cadqueryOutputEl.textContent = `${result.rationale || "Generated CadQuery code."} Render failed; edit the code or regenerate.`;
+    }
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery generation failed.", "error");
+  } finally {
+    if (generateCadqueryButton) generateCadqueryButton.disabled = false;
     if (renderCadqueryButton) renderCadqueryButton.disabled = false;
   }
 }
@@ -1793,7 +1881,9 @@ if (sampleButton) sampleButton.addEventListener("click", loadSample);
 if (exportButton) exportButton.addEventListener("click", exportStl);
 if (captureViewsButton) captureViewsButton.addEventListener("click", () => captureViews());
 if (generateScadButton) generateScadButton.addEventListener("click", () => generateScad(false));
-if (renderCadqueryButton) renderCadqueryButton.addEventListener("click", renderCadquerySample);
+if (generateCadqueryButton) generateCadqueryButton.addEventListener("click", generateCadqueryCode);
+if (renderCadqueryButton) renderCadqueryButton.addEventListener("click", renderCadqueryCode);
+if (loadCadquerySampleButton) loadCadquerySampleButton.addEventListener("click", () => loadCadquerySampleCode({ render: false }));
 if (iterateScadButton) iterateScadButton.addEventListener("click", () => generateScad(true));
 if (renderScadButton) renderScadButton.addEventListener("click", () => {
   try {
@@ -1845,7 +1935,7 @@ if (isOpenScadPage) {
 }
 
 if (isCadQueryPage) {
-  renderCadquerySample();
+  loadCadquerySampleCode({ render: true });
 }
 
 if (systemPromptInput) {
