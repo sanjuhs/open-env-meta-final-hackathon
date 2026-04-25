@@ -2,25 +2,55 @@ import "./styles.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { renderScadToGroup } from "./scadRenderer.js";
 
 const app = document.querySelector("#app");
+const route = window.location.pathname;
+const isLandingPage = route === "/" || route === "/index.html";
+const isCadQueryPage = route === "/cadquery";
+const isOpenScadPage = route === "/openscad" || (!isLandingPage && !isCadQueryPage);
 
 app.innerHTML = `
-  <main class="shell">
+  <main class="landing ${isLandingPage ? "" : "hidden"}">
+    <section>
+      <p class="eyebrow">CADForge Experiment 2</p>
+      <h1>CAD workbench</h1>
+      <p class="intro">Choose the code-CAD path to render and inspect. OpenSCAD is the agent loop; CadQuery is the real Python CAD backend for parametric mechanical parts.</p>
+      <div class="route-grid">
+        <a class="route-card" href="/openscad">
+          <span>OpenSCAD</span>
+          <strong>Markus chair agent</strong>
+          <small>GPT-5.4 generates SCAD, renders the supported CSG subset, and iterates with topology feedback.</small>
+        </a>
+        <a class="route-card" href="/cadquery">
+          <span>CadQuery</span>
+          <strong>Heavy-duty J hook</strong>
+          <small>Backend runs real CadQuery in Python, exports STL, and renders the mesh here.</small>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <main class="shell ${isLandingPage ? "hidden" : ""}">
     <section class="panel controls">
+      <nav class="subnav">
+        <a href="/">Home</a>
+        <a class="${isOpenScadPage ? "active" : ""}" href="/openscad">OpenSCAD</a>
+        <a class="${isCadQueryPage ? "active" : ""}" href="/cadquery">CadQuery</a>
+      </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
-        <h1>Markus chair CAD generator</h1>
-        <p class="intro">Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference.</p>
+        <h1>${isCadQueryPage ? "CadQuery hook renderer" : "Markus chair CAD generator"}</h1>
+        <p class="intro">${isCadQueryPage ? "Run a real CadQuery script in the backend, export STL, and inspect the generated mechanical hook mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
       </div>
 
-      <label for="prompt">Design prompt</label>
-      <textarea id="prompt" spellcheck="false">Create an editable OpenSCAD model of an office chair similar to an IKEA Markus chair. It should have a seat, tall backrest, headrest-like upper section, armrests, a central support column or leg structure, and a five-star rolling base. Every structural part must touch or union into one coherent watertight object with no floating parts.</textarea>
+      <label class="${isCadQueryPage ? "hidden" : ""}" for="prompt">Design prompt</label>
+      <textarea class="${isCadQueryPage ? "hidden" : ""}" id="prompt" spellcheck="false">Create an editable OpenSCAD model of an office chair similar to an IKEA Markus chair. It should have a seat, tall backrest, headrest-like upper section, armrests, a central support column or leg structure, and a five-star rolling base. Every structural part must touch or union into one coherent watertight object with no floating parts.</textarea>
 
-      <button id="generate-scad" class="primary generate-only">Generate</button>
+      <button id="generate-scad" class="primary generate-only ${isCadQueryPage ? "hidden" : ""}">Generate</button>
 
-      <section class="scad-lab">
+      <section class="scad-lab ${isCadQueryPage ? "hidden" : ""}">
         <div class="scad-lab-head">
           <label for="scad-code">OpenSCAD code</label>
           <span>real CSG subset renderer</span>
@@ -39,6 +69,20 @@ app.innerHTML = `
         <div id="scad-output" class="scad-output">Supported now: cube, sphere, cylinder, translate, rotate, scale, union, difference, and intersection.</div>
       </section>
 
+      <section class="scad-lab ${isCadQueryPage ? "" : "hidden"}">
+        <div class="scad-lab-head">
+          <label for="cadquery-code">CadQuery sample</label>
+          <span>real Python CadQuery -> STL</span>
+        </div>
+        <textarea id="cadquery-code" spellcheck="false" readonly>base = cq.Workplane("XY").box(...).edges("|Z").fillet(...)
+base.faces(">Z").workplane().pushPoints(...).cskHole(...)
+hook = cq.Workplane("YZ").moveTo(...).threePointArc(...).extrude(...)
+fixture = base.union(hook).union(bottom_gusset).union(top_gusset)
+cq.exporters.export(fixture, "heavy_duty_hook.stl")</textarea>
+        <button id="render-cadquery" class="primary generate-only">Render CadQuery Hook</button>
+        <div id="cadquery-output" class="scad-output">Backend will run the real CadQuery sample and return an STL mesh.</div>
+      </section>
+
       <div id="status" class="status">Ready.</div>
       <div id="agent-steps" class="agent-steps"></div>
 
@@ -50,7 +94,7 @@ app.innerHTML = `
       <div class="viewer-top">
         <div>
           <p class="eyebrow">3D Viewer</p>
-          <h2 id="design-title">No CAD design loaded</h2>
+          <h2 id="design-title">${isCadQueryPage ? "No CadQuery mesh loaded" : "No CAD design loaded"}</h2>
         </div>
         <div class="legend">
           <span><i class="swatch plate"></i>primitive/body</span>
@@ -85,6 +129,8 @@ const iterateScadButton = document.querySelector("#iterate-scad");
 const renderScadButton = document.querySelector("#render-scad");
 const loadScadExampleButton = document.querySelector("#load-scad-example");
 const scadOutputEl = document.querySelector("#scad-output");
+const renderCadqueryButton = document.querySelector("#render-cadquery");
+const cadqueryOutputEl = document.querySelector("#cadquery-output");
 const agentStepsEl = document.querySelector("#agent-steps");
 const toolBudgetInput = document.querySelector("#tool-budget");
 const toolBudgetValue = document.querySelector("#tool-budget-value");
@@ -229,6 +275,73 @@ function renderScadFromEditor() {
   jsonEl.textContent = JSON.stringify({ scad_code: scadCodeInput.value, render_stats: stats }, null, 2);
   setStatus("Rendered SCAD code into the 3D viewer.", "ok");
   window.setTimeout(() => captureViews({ silent: true }), 80);
+}
+
+function arrayBufferFromBase64(value) {
+  const binary = window.atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes.buffer;
+}
+
+function renderCadqueryStl(result) {
+  const loader = new STLLoader();
+  const geometry = loader.parse(arrayBufferFromBase64(result.stl_base64));
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+
+  if (currentGroup) scene.remove(currentGroup);
+  const material = new THREE.MeshStandardMaterial({ color: 0x7a8f9f, metalness: 0.32, roughness: 0.34 });
+  const mesh = new THREE.Mesh(geometry, material);
+  currentGroup = new THREE.Group();
+  currentGroup.add(mesh);
+  scene.add(currentGroup);
+
+  const box = new THREE.Box3().setFromObject(currentGroup);
+  const center = new THREE.Vector3();
+  const size = new THREE.Vector3();
+  box.getCenter(center);
+  box.getSize(size);
+  controls.target.copy(center);
+  camera.position.set(center.x + Math.max(size.x * 1.4, 70), center.y - Math.max(size.y * 1.8, 120), center.z + Math.max(size.z * 1.2, 75));
+  controls.update();
+
+  const triangles = geometry.index ? geometry.index.count / 3 : geometry.attributes.position.count / 3;
+  titleEl.textContent = result.name || "Rendered CadQuery STL";
+  cadqueryOutputEl.textContent = `Generated STL with ${Math.round(triangles)} triangles from real CadQuery.`;
+  metricsEl.innerHTML = [
+    metric("Backend", "CadQuery"),
+    metric("Triangles", Math.round(triangles)),
+    metric("X size", size.x.toFixed(1), " mm"),
+    metric("Y size", size.y.toFixed(1), " mm"),
+    metric("Z size", size.z.toFixed(1), " mm"),
+    metric("Features", result.cadquery_features?.length || 0)
+  ].join("");
+  jsonEl.textContent = JSON.stringify({ ...result, stl_base64: `<${result.stl_base64.length} base64 chars>` }, null, 2);
+  setStatus(`Rendered CadQuery STL in ${(result.elapsed_ms / 1000).toFixed(1)}s.`, "ok");
+  window.setTimeout(() => captureViews({ silent: true }), 80);
+}
+
+async function renderCadquerySample() {
+  setStatus("Running CadQuery backend and exporting STL...", "working");
+  if (renderCadqueryButton) renderCadqueryButton.disabled = true;
+  try {
+    const response = await fetch("/api/cadquery/sample-hook", { method: "POST" });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery render failed.", "error");
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return;
+    }
+    renderCadqueryStl(result);
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery render failed.", "error");
+  } finally {
+    if (renderCadqueryButton) renderCadqueryButton.disabled = false;
+  }
 }
 
 function makePlateShape(design) {
@@ -1680,6 +1793,7 @@ if (sampleButton) sampleButton.addEventListener("click", loadSample);
 if (exportButton) exportButton.addEventListener("click", exportStl);
 if (captureViewsButton) captureViewsButton.addEventListener("click", () => captureViews());
 if (generateScadButton) generateScadButton.addEventListener("click", () => generateScad(false));
+if (renderCadqueryButton) renderCadqueryButton.addEventListener("click", renderCadquerySample);
 if (iterateScadButton) iterateScadButton.addEventListener("click", () => generateScad(true));
 if (renderScadButton) renderScadButton.addEventListener("click", () => {
   try {
@@ -1722,10 +1836,16 @@ function animate() {
 }
 
 animate();
-try {
-  renderScadFromEditor();
-} catch (error) {
-  setStatus(error instanceof Error ? error.message : "SCAD render failed.", "error");
+if (isOpenScadPage) {
+  try {
+    renderScadFromEditor();
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "SCAD render failed.", "error");
+  }
+}
+
+if (isCadQueryPage) {
+  renderCadquerySample();
 }
 
 if (systemPromptInput) {

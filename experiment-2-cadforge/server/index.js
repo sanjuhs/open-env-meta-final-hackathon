@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
@@ -15,6 +17,7 @@ loadEnv();
 
 const app = express();
 const port = Number(process.env.PORT || 8791);
+const appRoot = process.cwd();
 const pythonBin =
   process.env.PYTHON_SIM_BIN ||
   "/Users/sanju/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3";
@@ -2395,6 +2398,62 @@ app.post("/api/scad-iterate", async (req, res) => {
     res.json({ source: "openai_scad_iterator", ...result });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Unknown SCAD iteration error" });
+  }
+});
+
+app.post("/api/cadquery/sample-hook", async (req, res) => {
+  loadEnv();
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_heavy_duty_hook.py");
+  const outDir = path.join(appRoot, "runs", "cadquery");
+  const pythonPath = path.join(appRoot, "python_tools");
+  const startedAt = Date.now();
+  const result = spawnSync(pythonBin, [scriptPath, "--out-dir", outDir], {
+    cwd: appRoot,
+    encoding: "utf8",
+    timeout: 120000,
+    env: {
+      ...process.env,
+      PYTHONPATH: pythonPath,
+      XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+    }
+  });
+
+  if (result.error) {
+    res.status(500).json({
+      error: result.error.message,
+      stdout: result.stdout,
+      stderr: result.stderr
+    });
+    return;
+  }
+
+  if (result.status !== 0) {
+    res.status(500).json({
+      error: `CadQuery exited with status ${result.status}`,
+      stdout: result.stdout,
+      stderr: result.stderr
+    });
+    return;
+  }
+
+  try {
+    const lines = String(result.stdout || "").trim().split(/\r?\n/).filter(Boolean);
+    const payload = JSON.parse(lines[lines.length - 1] || "{}");
+    const stl = readFileSync(payload.stl_path);
+    res.json({
+      source: "cadquery_sample_hook",
+      elapsed_ms: Date.now() - startedAt,
+      ...payload,
+      stl_base64: stl.toString("base64"),
+      stdout: result.stdout,
+      stderr: result.stderr
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : "Failed to read CadQuery STL output.",
+      stdout: result.stdout,
+      stderr: result.stderr
+    });
   }
 });
 
