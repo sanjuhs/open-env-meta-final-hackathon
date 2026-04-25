@@ -11,36 +11,14 @@ app.innerHTML = `
     <section class="panel controls">
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
-        <h1>Multi-step code-CAD creator</h1>
-        <p class="intro">Ask the agent to build chairs, hooks, trusses, and fixtures through visible CSG/CAD operations, then inspect validity, editability, geometry coherence, and structural feedback.</p>
+        <h1>Markus chair CAD generator</h1>
+        <p class="intro">Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference.</p>
       </div>
 
       <label for="prompt">Design prompt</label>
-      <div class="preset-row">
-        <button data-preset="chair">Chair</button>
-        <button data-preset="advanced-chair">Advanced Chair</button>
-        <button data-preset="truss">Truss</button>
-        <button data-preset="torque-clamp">120 Nm Clamp</button>
-        <button data-preset="hook">Load Hook</button>
-        <button data-preset="motor-stator">Motor Stator</button>
-        <button data-preset="table">Six-Leg Table</button>
-        <button data-preset="bike-fixture">Bike Fixture</button>
-      </div>
-      <textarea id="prompt" spellcheck="false">Build a simple four-legged chair as editable code-CAD. It must support a 700 N seated load, include a seat panel, four connected legs, lower crossbars, and a backrest, fit inside a 500 mm x 500 mm x 900 mm envelope, and avoid floating parts.</textarea>
+      <textarea id="prompt" spellcheck="false">Create an editable OpenSCAD model of an office chair similar to an IKEA Markus chair. It should have a seat, tall backrest, headrest-like upper section, armrests, a central support column or leg structure, and a five-star rolling base. Every structural part must touch or union into one coherent watertight object with no floating parts.</textarea>
 
-      <details class="system-box">
-        <summary>System prompt</summary>
-        <textarea id="system-prompt" spellcheck="false"></textarea>
-      </details>
-
-      <div class="button-row">
-        <button id="generate" class="primary">Generate Agent Loop</button>
-        <button id="benchmark">Run 5.4 Iterations</button>
-        <button id="tool-episode">Run Tool Episode</button>
-        <button id="sample">Load Sample</button>
-        <button id="export">Export STL</button>
-        <button id="capture-views">Capture 4 Views</button>
-      </div>
+      <button id="generate-scad" class="primary generate-only">Generate</button>
 
       <section class="scad-lab">
         <div class="scad-lab-head">
@@ -58,54 +36,13 @@ app.innerHTML = `
   }
   translate([20, 27, -1]) cylinder(h=8, r=4, $fn=32);
 }</textarea>
-        <div class="button-row">
-          <button id="generate-scad" class="primary">Generate SCAD</button>
-          <button id="iterate-scad">Iterate SCAD</button>
-          <button id="render-scad">Render SCAD</button>
-          <button id="load-scad-example">Load Example</button>
-        </div>
         <div id="scad-output" class="scad-output">Supported now: cube, sphere, cylinder, translate, rotate, scale, union, difference, and intersection.</div>
       </section>
 
-      <label class="tool-budget" for="tool-budget">
-        <span>Tool-call budget</span>
-        <strong id="tool-budget-value">72</strong>
-        <input id="tool-budget" type="range" min="50" max="300" step="10" value="72" />
-      </label>
-
       <div id="status" class="status">Ready.</div>
-      <div class="render-state">
-        <label for="render-state-select">Rendered state</label>
-        <select id="render-state-select" disabled>
-          <option>Final committed design</option>
-        </select>
-        <small id="render-state-note">Viewer is rendering the latest committed design.</small>
-      </div>
-      <div id="benchmark-results" class="benchmark-results"></div>
 
       <div class="metrics" id="metrics"></div>
-      <div class="tab-row workflow-tabs" role="tablist">
-        <button class="tab-button active" data-tab="loop">Loop</button>
-        <button class="tab-button" data-tab="tools">Tool Calls</button>
-        <button class="tab-button" data-tab="iterations">Iterations</button>
-        <button class="tab-button" data-tab="llm">LLM Input</button>
-        <button class="tab-button" data-tab="json">JSON</button>
-      </div>
-      <section id="loop-panel" class="tab-panel active">
-        <div id="agent-loop" class="agent-loop"></div>
-      </section>
-      <section id="tools-panel" class="tab-panel">
-        <div id="toolcalls" class="trace"></div>
-      </section>
-      <section id="iterations-panel" class="tab-panel">
-        <div id="iterations" class="agent-loop"></div>
-      </section>
-      <section id="llm-panel" class="tab-panel">
-        <div id="llm-input" class="trace"></div>
-      </section>
-      <section id="json-panel" class="tab-panel">
-        <pre id="json" class="json"></pre>
-      </section>
+      <pre id="json" class="json"></pre>
     </section>
 
     <section class="viewer-wrap">
@@ -264,6 +201,8 @@ function renderScadFromEditor() {
   const { group, stats } = renderScadToGroup(scadCodeInput.value, material);
   if (currentGroup) scene.remove(currentGroup);
   currentGroup = group;
+  latestDesign = null;
+  latestAnalysis = null;
   latestScadStats = stats;
   scene.add(group);
   const box = new THREE.Box3().setFromObject(group);
@@ -287,6 +226,7 @@ function renderScadFromEditor() {
   ].join("");
   jsonEl.textContent = JSON.stringify({ scad_code: scadCodeInput.value, render_stats: stats }, null, 2);
   setStatus("Rendered SCAD code into the 3D viewer.", "ok");
+  window.setTimeout(() => captureViews({ silent: true }), 80);
 }
 
 function makePlateShape(design) {
@@ -1064,23 +1004,37 @@ function renderDesign(design, analysis) {
 
 function cameraPoseForView(view, design = latestDesign) {
   const family = design ? familyOf(design) : "bracket";
-  const centerX = design?.base_length_mm ? design.base_length_mm / 2 : 50;
-  const targetZ = family === "chair" ? 56 : family === "motor_stator" ? 6 : family === "table" ? 34 : family === "freeform_object" ? 30 : 22;
-  const target = new THREE.Vector3(centerX, 0, targetZ);
-  const distance = family === "chair" ? 155 : family === "table" ? 145 : 130;
+  let centerX = design?.base_length_mm ? design.base_length_mm / 2 : 50;
+  let targetZ = family === "chair" ? 56 : family === "motor_stator" ? 6 : family === "table" ? 34 : family === "freeform_object" ? 30 : 22;
+  let target = new THREE.Vector3(centerX, 0, targetZ);
+  let distance = family === "chair" ? 155 : family === "table" ? 145 : 130;
+
+  if (!design && currentGroup) {
+    const box = new THREE.Box3().setFromObject(currentGroup);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(target);
+    centerX = target.x;
+    targetZ = target.z;
+    distance = Math.max(size.x, size.y, size.z, 80) * 1.85;
+  }
+
   const poses = {
     isometric: family === "chair" || family === "table"
       ? new THREE.Vector3(centerX + distance * 0.26, -distance, targetZ + distance * 0.22)
       : new THREE.Vector3(centerX + distance * 0.55, -distance, targetZ + distance * 0.62),
     front: new THREE.Vector3(centerX, -distance, targetZ + 8),
+    back: new THREE.Vector3(centerX, distance, targetZ + 8),
+    left: new THREE.Vector3(centerX - distance, 0, targetZ + 8),
     right: new THREE.Vector3(centerX + distance, 0, targetZ + 8),
-    top: new THREE.Vector3(centerX, 0, targetZ + distance)
+    top: new THREE.Vector3(centerX, 0, targetZ + distance),
+    bottom: new THREE.Vector3(centerX, 0, targetZ - distance)
   };
   return { position: poses[view] || poses.isometric, target };
 }
 
 function setCameraView(view) {
-  if (!latestDesign) return;
+  if (!currentGroup) return;
   const pose = cameraPoseForView(view, latestDesign);
   camera.position.copy(pose.position);
   controls.target.copy(pose.target);
@@ -1089,10 +1043,10 @@ function setCameraView(view) {
 }
 
 function captureViews(options = {}) {
-  if (!latestDesign || !currentGroup) return;
+  if (!currentGroup) return;
   const originalPosition = camera.position.clone();
   const originalTarget = controls.target.clone();
-  const views = ["isometric", "front", "right", "top"];
+  const views = ["isometric", "front", "back", "left", "right", "top", "bottom"];
   const captures = views.map((view) => {
     setCameraView(view);
     return { view, url: renderer.domElement.toDataURL("image/png") };
@@ -1110,7 +1064,7 @@ function captureViews(options = {}) {
       `
     )
     .join("");
-  if (!options.silent) setStatus("Captured isometric, front, right, and top debug views.", "ok");
+  if (!options.silent) setStatus("Captured isometric, front, back, left, right, top, and bottom debug views.", "ok");
 }
 
 function populateRenderStates(trace = [], finalDesign = latestDesign, finalAnalysis = latestAnalysis) {
@@ -1544,7 +1498,7 @@ async function generateScad(iterate = false) {
   const button = iterate ? iterateScadButton : generateScadButton;
   const endpoint = iterate ? "/api/scad-iterate" : "/api/scad-generate";
   setStatus(iterate ? "Asking model to revise the SCAD code..." : "Asking model to generate SCAD code...", "working");
-  button.disabled = true;
+  if (button) button.disabled = true;
   try {
     const response = await fetch(endpoint, {
       method: "POST",
@@ -1567,7 +1521,7 @@ async function generateScad(iterate = false) {
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "SCAD generation failed.", "error");
   } finally {
-    button.disabled = false;
+    if (button) button.disabled = false;
   }
 }
 
@@ -1588,22 +1542,22 @@ function exportStl() {
   setStatus("Exported STL from the rendered mesh.", "ok");
 }
 
-generateButton.addEventListener("click", generateDesign);
-benchmarkButton.addEventListener("click", benchmarkDesigns);
-toolEpisodeButton.addEventListener("click", runToolEpisode);
-sampleButton.addEventListener("click", loadSample);
-exportButton.addEventListener("click", exportStl);
-captureViewsButton.addEventListener("click", () => captureViews());
-generateScadButton.addEventListener("click", () => generateScad(false));
-iterateScadButton.addEventListener("click", () => generateScad(true));
-renderScadButton.addEventListener("click", () => {
+if (generateButton) generateButton.addEventListener("click", generateDesign);
+if (benchmarkButton) benchmarkButton.addEventListener("click", benchmarkDesigns);
+if (toolEpisodeButton) toolEpisodeButton.addEventListener("click", runToolEpisode);
+if (sampleButton) sampleButton.addEventListener("click", loadSample);
+if (exportButton) exportButton.addEventListener("click", exportStl);
+if (captureViewsButton) captureViewsButton.addEventListener("click", () => captureViews());
+if (generateScadButton) generateScadButton.addEventListener("click", () => generateScad(false));
+if (iterateScadButton) iterateScadButton.addEventListener("click", () => generateScad(true));
+if (renderScadButton) renderScadButton.addEventListener("click", () => {
   try {
     renderScadFromEditor();
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "SCAD render failed.", "error");
   }
 });
-loadScadExampleButton.addEventListener("click", () => {
+if (loadScadExampleButton) loadScadExampleButton.addEventListener("click", () => {
   scadCodeInput.value = `difference() {
   union() {
     cube([90, 60, 7]);
@@ -1619,7 +1573,7 @@ loadScadExampleButton.addEventListener("click", () => {
 }`;
   renderScadFromEditor();
 });
-toolBudgetInput.addEventListener("input", () => {
+if (toolBudgetInput && toolBudgetValue) toolBudgetInput.addEventListener("input", () => {
   toolBudgetValue.textContent = toolBudgetInput.value;
 });
 presetButtons.forEach((button) => {
@@ -1637,14 +1591,19 @@ function animate() {
 }
 
 animate();
-loadSample();
-renderAgentLoop(null);
+try {
+  renderScadFromEditor();
+} catch (error) {
+  setStatus(error instanceof Error ? error.message : "SCAD render failed.", "error");
+}
 
-fetch("/api/system-prompt")
-  .then((response) => response.json())
-  .then((result) => {
-    systemPromptInput.value = result.system_prompt || "";
-  })
-  .catch(() => {
-    systemPromptInput.value = "";
-  });
+if (systemPromptInput) {
+  fetch("/api/system-prompt")
+    .then((response) => response.json())
+    .then((result) => {
+      systemPromptInput.value = result.system_prompt || "";
+    })
+    .catch(() => {
+      systemPromptInput.value = "";
+    });
+}

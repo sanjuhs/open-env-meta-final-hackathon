@@ -240,6 +240,11 @@ button.primary {
   color: #ffffff;
 }
 
+button.generate-only {
+  min-height: 46px;
+  font-size: 15px;
+}
+
 button.tab-button.active {
   border-color: #164f73;
   background: #e9f4fa;
