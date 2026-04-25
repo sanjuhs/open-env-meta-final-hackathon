@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+.venv/
+.uv-cache/
+.cache/
+__pycache__/
+runs/
+*.egg-info/

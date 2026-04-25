@@ -1,0 +1,39 @@
+# Python environments and caches
+.venv/
+**/.venv/
+.uv-cache/
+**/.uv-cache/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+**/*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node dependencies and caches
+node_modules/
+**/node_modules/
+.npm-cache/
+**/.npm-cache/
+dist/
+build/
+
+# Local app/runtime artifacts
+runs/
+**/runs/
+.cache/
+**/.cache/
+.env
+**/.env
+
+# OS/editor noise
+.DS_Store
+*.swp
+*.swo
+

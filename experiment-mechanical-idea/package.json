@@ -1,0 +1,24 @@
+{
+  "name": "mechforge-experiment",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"node server/index.js\" \"vite --host 0.0.0.0 --port 5176\"",
+    "server": "node server/index.js",
+    "client": "vite --host 0.0.0.0",
+    "check": "node --check server/index.js && node --check src/main.js"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "openai": "^6.10.0",
+    "three": "^0.181.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "vite": "^7.2.4"
+  }
+}

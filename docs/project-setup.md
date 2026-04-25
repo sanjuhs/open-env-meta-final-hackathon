@@ -1,0 +1,3 @@
+Ideally, we should always use Python 3.12, and then we can use uv, which is to install all other packages in Python. For the front end, we can use HTML, CSS, JavaScript, or we can use an XJS application, whatever suits us for a front end interactive environment. Ideally, HTML, CSS, JS should be good, or even Gradio is fine. Whatever works for this OpenENV, you can refer to competition round one if you wanted more, but ideally we would want to do that.
+
+For more data and information, you can refer to @docs-guide.md   and you can go through all other files and folders in this repository inside the docs folder so that we can get a better idea of what we want and how we're going to build stuff.

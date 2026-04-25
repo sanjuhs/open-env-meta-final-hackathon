@@ -1,0 +1,11 @@
+node_modules/
+.env
+dist/
+benchmark-results/
+.npm-cache/
+.uv-cache/
+.venv/
+.cache/
+runs/
+__pycache__/
+*.pyc

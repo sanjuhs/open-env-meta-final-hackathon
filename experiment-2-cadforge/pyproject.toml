@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openenv-mechforge-3d"
+version = "0.1.0"
+description = "OpenEnv environment for agentic 3D engineering design with Python FEA"
+requires-python = ">=3.12"
+dependencies = [
+    "openenv-core[core]>=0.2.3",
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "pydantic>=2.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "meshio>=5.3",
+    "gmsh>=4.13",
+    "scikit-fem>=11.0",
+    "cadquery>=2.5",
+    "openmdao>=3.35",
+    "openai>=2.0",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["mechforge", "server"]
+package-dir = { "mechforge" = "python_tools/mechforge", "server" = "server" }
+

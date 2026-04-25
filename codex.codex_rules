@@ -1,0 +1,14 @@
+# Codex Workspace Rules
+
+These rules apply to every task in this workspace.
+
+1. Never fake, mock, stub, simulate, or pretend a capability is implemented unless the user explicitly asks for a mock or prototype placeholder. If a dependency, API, renderer, solver, CAD kernel, dataset, or external tool is unavailable, report that exact limitation and either install/use the real dependency or clearly mark the feature as blocked.
+
+2. Do not label approximations as production behavior. If a feature uses a constrained subset, proxy metric, fallback implementation, or reduced-fidelity verifier, surface that fact in code, docs, and user-facing summaries.
+
+3. Use `uv` for Python environment creation and package installation by default. Avoid raw `pip install` unless there is a concrete reason and record that reason.
+
+4. Prefer Python 3.12 for virtual environments and scripts. If another Python version is required, document why.
+
+5. Prefer one repo-level virtual environment at `.venv` over separate per-experiment environments unless isolation is required for incompatible dependencies.
+
