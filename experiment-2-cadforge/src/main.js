@@ -248,6 +248,33 @@ function metric(label, value, suffix = "") {
   return `<div class="metric"><span>${label}</span><strong>${value}${suffix}</strong></div>`;
 }
 
+function fitCameraToObject(object, options = {}) {
+  resize();
+  const box = new THREE.Box3().setFromObject(object);
+  if (box.isEmpty()) return;
+
+  const center = new THREE.Vector3();
+  const sphere = new THREE.Sphere();
+  box.getCenter(center);
+  box.getBoundingSphere(sphere);
+
+  const radius = Math.max(sphere.radius, 1);
+  const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+  const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * Math.max(camera.aspect, 0.1));
+  const fitFov = Math.min(verticalFov, horizontalFov);
+  const distance = (radius / Math.sin(fitFov / 2)) * (options.padding ?? 1.35);
+  const direction = (options.direction || new THREE.Vector3(0.9, -1.25, 0.72)).normalize();
+
+  camera.near = Math.max(radius / 10000, 0.01);
+  camera.far = Math.max(distance + radius * 8, 1000);
+  camera.updateProjectionMatrix();
+  controls.minDistance = Math.max(radius * 0.03, 1);
+  controls.maxDistance = Math.max(distance + radius * 10, 1000);
+  controls.target.copy(center);
+  camera.position.copy(center).addScaledVector(direction, distance);
+  controls.update();
+}
+
 function renderMetrics(analysis) {
   const cadforge = analysis.cadforge || {};
   metricsEl.innerHTML = [
@@ -276,13 +303,9 @@ function renderScadFromEditor() {
   latestScadStats = stats;
   scene.add(group);
   const box = new THREE.Box3().setFromObject(group);
-  const center = new THREE.Vector3();
   const size = new THREE.Vector3();
-  box.getCenter(center);
   box.getSize(size);
-  controls.target.copy(center);
-  camera.position.set(center.x + Math.max(size.x, 60), center.y - Math.max(size.y * 2.2, 120), center.z + Math.max(size.z, 70));
-  controls.update();
+  fitCameraToObject(group, { padding: 1.45 });
   titleEl.textContent = "Rendered OpenSCAD CSG";
   scadOutputEl.textContent = `Rendered ${Math.round(stats.triangles)} triangles from ${stats.root_nodes} root node(s).`;
   metricsEl.innerHTML = [
@@ -326,13 +349,9 @@ function renderCadqueryStl(result) {
   scene.add(currentGroup);
 
   const box = new THREE.Box3().setFromObject(currentGroup);
-  const center = new THREE.Vector3();
   const size = new THREE.Vector3();
-  box.getCenter(center);
   box.getSize(size);
-  controls.target.copy(center);
-  camera.position.set(center.x + Math.max(size.x * 1.4, 70), center.y - Math.max(size.y * 1.8, 120), center.z + Math.max(size.z * 1.2, 75));
-  controls.update();
+  fitCameraToObject(currentGroup, { padding: 1.5 });
 
   const triangles = geometry.index ? geometry.index.count / 3 : geometry.attributes.position.count / 3;
   titleEl.textContent = result.name || "Rendered CadQuery STL";
@@ -1239,7 +1258,9 @@ function renderDesign(design, analysis) {
     controls.target.set(centerX, 0, 18);
     camera.position.set(centerX + 70, -135, 90);
   }
-  controls.update();
+  fitCameraToObject(group, {
+    padding: family === "chair" || family === "table" ? 1.55 : 1.35
+  });
   titleEl.textContent = design.title;
   renderMetrics(analysis);
   jsonEl.textContent = JSON.stringify({ design, analysis }, null, 2);
@@ -1256,11 +1277,13 @@ function cameraPoseForView(view, design = latestDesign) {
   if (!design && currentGroup) {
     const box = new THREE.Box3().setFromObject(currentGroup);
     const size = new THREE.Vector3();
+    const sphere = new THREE.Sphere();
     box.getSize(size);
     box.getCenter(target);
+    box.getBoundingSphere(sphere);
     centerX = target.x;
     targetZ = target.z;
-    distance = Math.max(size.x, size.y, size.z, 80) * 1.85;
+    distance = Math.max(sphere.radius * 3.3, Math.max(size.x, size.y, size.z, 80) * 1.55);
   }
 
   const poses = {
