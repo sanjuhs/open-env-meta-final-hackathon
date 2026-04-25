@@ -20,7 +20,6 @@ BLOCKED_TOKENS = [
     "compile(",
     "input(",
     "globals(",
-    "locals(",
     "getattr(",
     "setattr(",
     "delattr(",
@@ -73,7 +72,14 @@ def exportable_object(namespace: dict[str, Any], captured: list[Any]) -> Any:
     raise ValueError("CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj).")
 
 
+def normalize_export_object(obj: Any) -> Any:
+    if hasattr(obj, "toCompound"):
+        return obj.toCompound()
+    return obj
+
+
 def object_bbox(obj: Any):
+    obj = normalize_export_object(obj)
     shape = obj.val() if hasattr(obj, "val") else obj
     return shape.BoundingBox()
 
@@ -122,13 +128,17 @@ def main() -> None:
     namespace: dict[str, Any] = {
         "__builtins__": safe_builtins,
         "cq": cq,
+        "Assembly": cq.Assembly,
+        "Color": cq.Color,
         "exporters": exporters,
         "math": math,
         "show_object": show_object,
     }
+    safe_builtins["locals"] = lambda: namespace
     exec(code, namespace, namespace)
     obj = exportable_object(namespace, captured)
-    exporters.export(obj, str(stl_path))
+    export_obj = normalize_export_object(obj)
+    exporters.export(export_obj, str(stl_path))
     bbox = object_bbox(obj)
     print(
         json.dumps(

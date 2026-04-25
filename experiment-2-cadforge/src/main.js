@@ -299,6 +299,9 @@ function arrayBufferFromBase64(value) {
 }
 
 function renderCadqueryStl(result) {
+  if (result.repaired && result.code && cadqueryCodeInput) {
+    cadqueryCodeInput.value = result.code;
+  }
   const loader = new STLLoader();
   const geometry = loader.parse(arrayBufferFromBase64(result.stl_base64));
   geometry.computeVertexNormals();
@@ -323,7 +326,9 @@ function renderCadqueryStl(result) {
 
   const triangles = geometry.index ? geometry.index.count / 3 : geometry.attributes.position.count / 3;
   titleEl.textContent = result.name || "Rendered CadQuery STL";
-  cadqueryOutputEl.textContent = `Generated STL with ${Math.round(triangles)} triangles from real CadQuery.`;
+  cadqueryOutputEl.textContent = result.repaired
+    ? `Generated STL with ${Math.round(triangles)} triangles from real CadQuery. Repair applied: ${result.repair_note}`
+    : `Generated STL with ${Math.round(triangles)} triangles from real CadQuery.`;
   metricsEl.innerHTML = [
     metric("Backend", "CadQuery"),
     metric("Triangles", Math.round(triangles)),

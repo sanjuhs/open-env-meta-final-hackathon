@@ -1993,8 +1993,12 @@ function cadquerySystemPrompt() {
     "Do not use file IO, network, subprocesses, OS APIs, random external imports, or shell commands.",
     "Do not call exporters.export; the backend runner exports the final object.",
     "Assign the final exportable CadQuery object to a variable named `fixture`.",
-    "Use real CadQuery features such as workplanes, sketches, extrude, revolve, cskHole, fillet, chamfer, union, cut, and clean when useful.",
+    "For this web backend, prefer one `cq.Workplane`/Solid/Compound named `fixture`; do not use `cq.Assembly`, `show_object`, display-only colors, or CQ-Editor-only helpers unless the prompt explicitly asks for presentation code.",
+    "Use real CadQuery features such as workplanes, sketches, extrude, revolve, cskHole, union, cut, and clean when useful.",
     "Prefer parameterized code with named dimensions at the top.",
+    "For generated chair models, avoid fillet/chamfer calls unless the edge selector is guaranteed to match a solid; robust executable CAD is more important than decorative rounded edges.",
+    "For generated chair models, do not use mirror(), mirrorX(), mirrorY(), loft(), sweep(), or complex open-wire profiles; build the chair from translated/rotated boxes, cylinders, simple extrusions, and boolean cuts so the code runs reliably headlessly.",
+    "For chair-like objects, use a robust union of solids: five-star caster base, central gas cylinder, under-seat mechanism block, seat cushion, tall back frame/mesh panel, headrest pad, lumbar pad, and armrests. Keep it approximate but runnable; exact proprietary IKEA manufacturing geometry is not available.",
     "For wall-mounted J hooks, use the known-stable pattern: base plate as a filleted box with cskHole mounting holes, hook body as a closed 2D profile on the YZ plane extruded with both=True, triangular gussets as closed YZ profiles extruded with both=True, then fixture = base.union(hook).union(gussets).",
     "Avoid fragile sweep paths for hooks unless absolutely necessary; CadQuery threePointArc inside a closed planar profile is more reliable than sweep for this app.",
     "Do not use try/except blocks in generated code. Produce straightforward code that either runs or gives a clear verifier error.",
@@ -2007,6 +2011,18 @@ function cleanCadqueryCode(value = "") {
     .replace(/^```(?:python|py)?/i, "")
     .replace(/```$/i, "")
     .trim();
+}
+
+function repairCadqueryFilletChains(code = "") {
+  return String(code)
+    .replace(/\n\s*\.edges\([^)]*\)\s*\n\s*\.(?:fillet|chamfer)\([^)]*\)/g, "")
+    .replace(/\n\s*\.(?:fillet|chamfer)\([^)]*\)/g, "")
+    .trim();
+}
+
+function isFilletSelectionFailure(body = {}) {
+  const text = `${body.error || ""}\n${body.stderr || ""}\n${body.stdout || ""}`.toLowerCase();
+  return text.includes("no suitable edges") && (text.includes("fillet") || text.includes("chamfer"));
 }
 
 async function generateCadqueryWithModel({ prompt }) {
@@ -2601,19 +2617,36 @@ app.post("/api/cadquery/render-code", async (req, res) => {
   const outDir = path.join(appRoot, "runs", "cadquery-generated");
   const pythonPath = path.join(appRoot, "python_tools");
   const startedAt = Date.now();
-  const result = spawnSync(pythonBin, [scriptPath, "--out-dir", outDir, "--name", "generated_cadquery"], {
-    cwd: appRoot,
-    input: JSON.stringify({ code, features }),
-    encoding: "utf8",
-    timeout: 120000,
-    env: {
-      ...process.env,
-      PYTHONPATH: pythonPath,
-      XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
-    }
-  });
+  const runCode = (candidateCode) =>
+    spawnSync(pythonBin, [scriptPath, "--out-dir", outDir, "--name", "generated_cadquery"], {
+      cwd: appRoot,
+      input: JSON.stringify({ code: candidateCode, features }),
+      encoding: "utf8",
+      timeout: 120000,
+      env: {
+        ...process.env,
+        PYTHONPATH: pythonPath,
+        XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+      }
+    });
 
-  const response = cadqueryResultToResponse({ result, startedAt, source: "cadquery_code_runner" });
+  let response = cadqueryResultToResponse({ result: runCode(code), startedAt, source: "cadquery_code_runner" });
+  if (response.status !== 200 && isFilletSelectionFailure(response.body)) {
+    const repairedCode = repairCadqueryFilletChains(code);
+    if (repairedCode && repairedCode !== code) {
+      const originalFailure = response.body;
+      response = cadqueryResultToResponse({ result: runCode(repairedCode), startedAt, source: "cadquery_code_runner_repaired_fillet" });
+      if (response.status === 200) {
+        response.body = {
+          ...response.body,
+          repaired: true,
+          repair_note: "Removed failing fillet/chamfer edge-selection chains after CadQuery reported no suitable edges.",
+          original_error: originalFailure.error,
+          original_stderr: originalFailure.stderr
+        };
+      }
+    }
+  }
   res.status(response.status).json(response.body);
 });
 
