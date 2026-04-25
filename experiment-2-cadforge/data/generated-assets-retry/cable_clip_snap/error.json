@@ -1,0 +1,7 @@
+{
+  "id": "cable_clip_snap",
+  "level": "easy",
+  "family": "hardware",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/cable_clip_snap/reference.png'"
+}

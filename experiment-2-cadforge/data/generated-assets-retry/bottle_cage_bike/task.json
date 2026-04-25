@@ -1,0 +1,21 @@
+{
+  "id": "bottle_cage_bike",
+  "level": "medium",
+  "family": "consumer_product",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4b0-90bd-7f01-8ff3-2b7fabbb96ef",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

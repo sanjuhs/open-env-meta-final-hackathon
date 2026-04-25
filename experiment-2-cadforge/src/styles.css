@@ -15,7 +15,9 @@ body {
 }
 
 button,
-textarea {
+textarea,
+select,
+input {
   font: inherit;
 }
 
@@ -223,6 +225,23 @@ textarea {
   gap: 8px;
 }
 
+.env-row {
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) auto minmax(140px, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.env-row select,
+.env-row input {
+  min-width: 0;
+  border: 1px solid #c8d2dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #192531;
+  background: #ffffff;
+}
+
 .scad-lab {
   display: grid;
   gap: 10px;
@@ -257,6 +276,27 @@ textarea {
   border-radius: 8px;
   padding: 8px 10px;
   background: #ffffff;
+}
+
+.reward-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.reward-grid span {
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: #fbfcfd;
+  color: #25313d;
+  font-weight: 750;
+}
+
+.scad-output ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
 }
 
 .tool-budget {

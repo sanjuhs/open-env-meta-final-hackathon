@@ -1,0 +1,21 @@
+{
+  "id": "shaft_torque_clamp_120nm",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4ae-eeb8-7cc3-a693-e1a4b86c2a6b",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

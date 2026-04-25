@@ -1,0 +1,14 @@
+node_modules/
+.npm-cache/
+.cache/
+__pycache__/
+*.pyc
+*.egg-info/
+reports/
+runs/
+data/sft/
+data/preferences/
+data/rl/
+data/generated-assets-retry/
+data/token_estimate.json
+dist/

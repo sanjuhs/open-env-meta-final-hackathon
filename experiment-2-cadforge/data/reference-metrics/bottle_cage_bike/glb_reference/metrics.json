@@ -1,0 +1,46 @@
+{
+  "name": "glb_reference",
+  "stl_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/glb_reference_normalized.stl",
+  "points_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/points.npy",
+  "silhouettes": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike/glb_reference/silhouettes/isometric.png"
+  },
+  "bbox": {
+    "xmin": -0.3191562294960022,
+    "xmax": 0.3202303946018219,
+    "ymin": -0.2363973706960678,
+    "ymax": 0.23978199064731598,
+    "zmin": -0.49750638008117676,
+    "zmax": 0.5001268982887268,
+    "xlen": 0.6393866240978241,
+    "ylen": 0.4761793613433838,
+    "zlen": 0.9976332783699036
+  },
+  "normalized_bbox": {
+    "xmin": -320.45173209466236,
+    "xmax": 320.45173209466236,
+    "ymin": -238.65450946135414,
+    "ymax": 238.65450946135414,
+    "zmin": 0.0,
+    "zmax": 1000.0,
+    "xlen": 640.9034641893247,
+    "ylen": 477.3090189227083,
+    "zlen": 1000.0
+  },
+  "topology": {
+    "vertices": 6699,
+    "faces": 9562,
+    "components": 131,
+    "floating_components": 130,
+    "watertight": false,
+    "winding_consistent": true,
+    "boundary_edges": 3614,
+    "non_manifold_edges": 0,
+    "degenerate_faces": 0
+  }
+}

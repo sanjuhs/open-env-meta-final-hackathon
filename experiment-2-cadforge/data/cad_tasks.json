@@ -1,0 +1,218 @@
+[
+  {
+    "id": "table_six_leg_500n",
+    "level": "easy",
+    "family": "furniture",
+    "prompt": "Design a small table with six legs. It should have a rectangular tabletop, six visible support legs, lower crossbar stretchers, and the capability to withstand 500 N of downward force.",
+    "image_prompt": "Realistic product render of a small rectangular utility table with six visible legs and lower crossbar stretchers, plain white background, centered, orthographic three-quarter view, clean studio lighting, no text.",
+    "semantic_hints": ["tabletop", "six_leg", "leg", "crossbar", "stretcher", "support", "load_500n"],
+    "bbox_mm": [900, 600, 720]
+  },
+  {
+    "id": "four_leg_chair_700n",
+    "level": "easy",
+    "family": "furniture",
+    "prompt": "Build a simple four-legged chair as editable code-CAD. It must support a 700 N seated load, include a seat panel, four connected legs, lower crossbars, and a backrest, fit inside a 500 mm x 500 mm x 900 mm envelope, and avoid floating parts.",
+    "image_prompt": "Realistic product render of a simple four-legged chair with seat panel, backrest, connected legs, and lower crossbars, plain white background, centered, clean CAD-like studio lighting, no text.",
+    "semantic_hints": ["seat", "four_leg", "leg", "crossbar", "backrest", "connected", "load_700n"],
+    "bbox_mm": [500, 500, 900]
+  },
+  {
+    "id": "wall_j_hook_120n",
+    "level": "easy",
+    "family": "mechanical_fixture",
+    "prompt": "Design a simple 6061 aluminum wall-mounted J hook for a 120 N downward hanging load at the hook tip. It should visibly look like a hook, with a compact wall mount and a curved hook arm, not a ribbed cantilever bracket.",
+    "image_prompt": "Realistic engineering product render of a compact aluminum wall-mounted J hook with a flat wall plate and curved hook arm, plain white background, centered, no text.",
+    "semantic_hints": ["wall_mount", "j_hook", "hook", "curved_arm", "bolt_hole", "tip_load", "load_120n", "aluminum_6061"],
+    "bbox_mm": [160, 90, 180]
+  },
+  {
+    "id": "shelf_bracket_triangular_200n",
+    "level": "easy",
+    "family": "mechanical_fixture",
+    "prompt": "Design a compact triangular shelf bracket in editable CadQuery. Include a vertical wall plate with two mounting holes, a horizontal support arm, a diagonal rib, and support for a 200 N downward shelf load.",
+    "image_prompt": "Realistic product render of a compact triangular metal shelf bracket with wall plate, two mounting holes, horizontal arm, and diagonal rib, plain white background, no text.",
+    "semantic_hints": ["wall_plate", "mounting_hole", "support_arm", "diagonal_rib", "bracket", "load_200n"],
+    "bbox_mm": [220, 60, 180]
+  },
+  {
+    "id": "drawer_handle_two_bolt",
+    "level": "easy",
+    "family": "hardware",
+    "prompt": "Design a simple drawer pull handle as editable code-CAD. Include two mounting posts, two screw holes, a smooth arched grip bar, and a compact symmetric form.",
+    "image_prompt": "Realistic product render of a simple brushed aluminum drawer pull handle with two mounting posts and arched grip, plain white background, centered, no text.",
+    "semantic_hints": ["drawer_handle", "mounting_post", "screw_hole", "arched_grip", "symmetric", "bar"],
+    "bbox_mm": [160, 38, 40]
+  },
+  {
+    "id": "caster_wheel_fork",
+    "level": "easy",
+    "family": "hardware",
+    "prompt": "Design a small caster wheel assembly as editable code-CAD. Include a wheel, axle, U-shaped fork, swivel stem, and top mounting plate with four holes.",
+    "image_prompt": "Realistic product render of a small caster wheel assembly with wheel, axle, U-shaped fork, swivel stem, and top mounting plate, plain white background, no text.",
+    "semantic_hints": ["caster", "wheel", "axle", "u_fork", "swivel_stem", "mounting_plate", "four_holes"],
+    "bbox_mm": [90, 80, 130]
+  },
+  {
+    "id": "bike_accessory_mount_120n",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "prompt": "Design a compact 6061 aluminum bike accessory mounting fixture for a 120 N downward load. Use a clamp-like mount and a short supported arm, with safety factor above 2.0.",
+    "image_prompt": "Realistic engineering render of a compact aluminum bike accessory clamp mount with short supported arm and bolt features, plain white background, centered, no text.",
+    "semantic_hints": ["bike_mount", "clamp", "supported_arm", "bolt", "load_120n", "safety_factor_2", "aluminum_6061"],
+    "bbox_mm": [180, 80, 90]
+  },
+  {
+    "id": "shaft_torque_clamp_120nm",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "prompt": "Design a compact 6061 aluminum clamp fixture that resists 120 Nm torque around a shaft proxy. Use a twin-bolt fixed root on the left, place the shaft/load boss near the free end, keep the load path clear, and maintain safety factor above 2.0 while minimizing mass.",
+    "image_prompt": "Realistic CAD product render of a compact aluminum torque clamp fixture with twin bolts at fixed root and circular shaft boss near free end, plain white background, no text.",
+    "semantic_hints": ["clamp_fixture", "torque_120nm", "shaft_boss", "twin_bolt", "fixed_root", "load_path", "safety_factor_2", "lightweight"],
+    "bbox_mm": [240, 90, 70]
+  },
+  {
+    "id": "axial_motor_stator_12_slot",
+    "level": "medium",
+    "family": "electromechanical",
+    "prompt": "Design a simple 12-slot axial motor stator concept. It should visibly look like a circular stator ring with radial teeth and a center shaft opening. Use steel and keep the structure compact.",
+    "image_prompt": "Realistic CAD render of a compact circular steel axial motor stator ring with twelve radial teeth and a center shaft opening, plain white background, centered top three-quarter view, no text.",
+    "semantic_hints": ["stator", "twelve_slot", "radial_tooth", "center_bore", "shaft_opening", "steel", "ring"],
+    "bbox_mm": [180, 180, 30]
+  },
+  {
+    "id": "lightweight_truss_support_250n",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "prompt": "Build a simple lightweight truss support as code-CAD. Use connected triangular load paths, two fixed mounting holes on the left, a load boss on the right, and enough ribs/cross-members to carry a 250 N downward load with safety factor above 2.0.",
+    "image_prompt": "Realistic engineering render of a lightweight metal truss support with triangular ribs, two mounting holes on left, and round load boss on right, plain white background, no text.",
+    "semantic_hints": ["truss", "triangular", "mounting_hole", "load_boss", "rib", "cross_member", "load_250n", "safety_factor_2"],
+    "bbox_mm": [260, 80, 130]
+  },
+  {
+    "id": "phone_stand_adjustable_hinge",
+    "level": "medium",
+    "family": "consumer_product",
+    "prompt": "Design an adjustable phone stand as editable CadQuery. Include a base plate, tilted back support, bottom lip, side stops, a hinge barrel, and visible screw bosses.",
+    "image_prompt": "Realistic product render of an adjustable phone stand with base plate, tilted support, bottom lip, side stops, hinge barrel, and screw bosses, white background, no text.",
+    "semantic_hints": ["phone_stand", "base_plate", "tilted_support", "bottom_lip", "side_stop", "hinge_barrel", "screw_boss"],
+    "bbox_mm": [120, 120, 160]
+  },
+  {
+    "id": "robot_servo_bracket",
+    "level": "medium",
+    "family": "robotics",
+    "prompt": "Design a compact robot servo mounting bracket. Include a U-shaped cradle, four servo screw holes, two side ears, a cable relief notch, and a stiffening rib.",
+    "image_prompt": "Realistic CAD render of a compact metal robot servo bracket with U-shaped cradle, screw holes, side ears, cable relief notch, and stiffening rib, white background, no text.",
+    "semantic_hints": ["servo_bracket", "u_cradle", "screw_hole", "side_ear", "cable_notch", "stiffening_rib"],
+    "bbox_mm": [80, 60, 55]
+  },
+  {
+    "id": "ergonomic_curvy_chair_1000n",
+    "level": "hard",
+    "family": "furniture",
+    "prompt": "Build an ergonomic curvy chair as editable code-CAD. It needs a curved seat, four connected splayed legs, crossbars, armrests, a curved backrest, and a headrest. It must withstand 1000 N on the seat and 100 N on the backrest while remaining one connected watertight CAD-like object.",
+    "image_prompt": "Realistic product render of an ergonomic curvy chair with curved seat, four splayed legs, crossbars, armrests, curved backrest, and headrest, plain white background, no text.",
+    "semantic_hints": ["curved_seat", "splayed_leg", "crossbar", "armrest", "curved_backrest", "headrest", "connected", "watertight", "load_1000n"],
+    "bbox_mm": [620, 650, 1120]
+  },
+  {
+    "id": "folding_step_stool",
+    "level": "hard",
+    "family": "furniture",
+    "prompt": "Design a compact folding step stool as editable code-CAD. Include a top step, lower step, crossed side frames, hinge barrels, anti-slip grooves, and visible connected pivots.",
+    "image_prompt": "Realistic product render of a compact folding step stool with two steps, crossed side frames, hinge barrels, anti-slip grooves, and pivot joints, white background, no text.",
+    "semantic_hints": ["folding_stool", "top_step", "lower_step", "crossed_frame", "hinge_barrel", "anti_slip_groove", "pivot"],
+    "bbox_mm": [420, 360, 480]
+  },
+  {
+    "id": "bench_vise_simplified",
+    "level": "hard",
+    "family": "tooling",
+    "prompt": "Design a simplified bench vise concept as editable CadQuery. Include a fixed jaw, moving jaw, screw spindle, handle bar, base with mounting holes, guide rails, and clear sliding direction.",
+    "image_prompt": "Realistic CAD render of a simplified bench vise with fixed jaw, moving jaw, screw spindle, handle bar, guide rails, and base mounting holes, plain white background, no text.",
+    "semantic_hints": ["bench_vise", "fixed_jaw", "moving_jaw", "screw_spindle", "handle_bar", "guide_rail", "mounting_hole"],
+    "bbox_mm": [280, 140, 150]
+  },
+  {
+    "id": "micro_drone_frame",
+    "level": "hard",
+    "family": "robotics",
+    "prompt": "Design a lightweight micro-drone frame as editable code-CAD. Include a central electronics plate, four arms, four motor bosses, screw holes, wire channels, and curved protective guards.",
+    "image_prompt": "Realistic CAD render of a lightweight micro drone frame with central plate, four arms, motor bosses, screw holes, wire channels, and curved guards, white background, no text.",
+    "semantic_hints": ["drone_frame", "central_plate", "four_arm", "motor_boss", "screw_hole", "wire_channel", "protective_guard"],
+    "bbox_mm": [180, 180, 28]
+  },
+  {
+    "id": "gearbox_housing_split",
+    "level": "hard",
+    "family": "mechanical_fixture",
+    "prompt": "Design a compact split gearbox housing concept as editable CadQuery. Include two bearing bores, bolted flanges, ribbing, a removable cover seam, oil drain boss, and rounded exterior edges.",
+    "image_prompt": "Realistic CAD render of a compact split gearbox housing with bearing bores, bolted flanges, ribs, cover seam, and oil drain boss, plain white background, no text.",
+    "semantic_hints": ["gearbox_housing", "bearing_bore", "bolted_flange", "rib", "cover_seam", "oil_drain_boss", "rounded_edge"],
+    "bbox_mm": [260, 180, 160]
+  },
+  {
+    "id": "bottle_cage_bike",
+    "level": "medium",
+    "family": "consumer_product",
+    "prompt": "Design a lightweight bicycle bottle cage as editable CadQuery. Include two frame mounting holes, curved side arms, lower bottle stop, retaining lip, and minimal material ribs.",
+    "image_prompt": "Realistic product render of a lightweight bicycle bottle cage with mounting holes, curved side arms, lower stop, retaining lip, and minimal ribs, white background, no text.",
+    "semantic_hints": ["bottle_cage", "mounting_hole", "curved_arm", "lower_stop", "retaining_lip", "rib", "lightweight"],
+    "bbox_mm": [85, 80, 150]
+  },
+  {
+    "id": "laptop_riser_vented",
+    "level": "medium",
+    "family": "consumer_product",
+    "prompt": "Design a vented laptop riser stand as editable code-CAD. Include a tilted platform, two side rails, front stops, ventilation slots, and rear support legs.",
+    "image_prompt": "Realistic product render of a vented laptop riser stand with tilted platform, side rails, front stops, ventilation slots, and rear support legs, white background, no text.",
+    "semantic_hints": ["laptop_riser", "tilted_platform", "side_rail", "front_stop", "vent_slot", "rear_leg"],
+    "bbox_mm": [320, 240, 120]
+  },
+  {
+    "id": "pipe_clamp_saddle",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "prompt": "Design a pipe clamp saddle as editable CadQuery. Include a semicircular saddle, two side flanges, bolt holes, rounded ribs, and a visible pipe contact surface.",
+    "image_prompt": "Realistic CAD render of a metal pipe clamp saddle with semicircular cradle, side flanges, bolt holes, rounded ribs, and pipe contact surface, white background, no text.",
+    "semantic_hints": ["pipe_clamp", "saddle", "semicircular", "side_flange", "bolt_hole", "rib", "pipe_contact"],
+    "bbox_mm": [160, 80, 80]
+  },
+  {
+    "id": "hinge_leaf_barrel",
+    "level": "easy",
+    "family": "hardware",
+    "prompt": "Design a simple door hinge as editable CadQuery. Include two hinge leaves, alternating barrel knuckles, a center pin, countersunk screw holes, and rounded leaf corners.",
+    "image_prompt": "Realistic product render of a simple metal door hinge with two leaves, barrel knuckles, center pin, countersunk screw holes, and rounded corners, white background, no text.",
+    "semantic_hints": ["hinge", "leaf", "barrel_knuckle", "center_pin", "countersunk_hole", "rounded_corner"],
+    "bbox_mm": [100, 70, 12]
+  },
+  {
+    "id": "cable_clip_snap",
+    "level": "easy",
+    "family": "hardware",
+    "prompt": "Design a snap-in cable clip as editable code-CAD. Include a base pad, rounded cable channel, flexible snap arms, screw hole, and lead-in chamfers.",
+    "image_prompt": "Realistic CAD render of a snap-in cable clip with base pad, rounded cable channel, flexible arms, screw hole, and lead-in chamfers, white background, no text.",
+    "semantic_hints": ["cable_clip", "base_pad", "cable_channel", "snap_arm", "screw_hole", "chamfer"],
+    "bbox_mm": [45, 28, 22]
+  },
+  {
+    "id": "desk_lamp_arm_joint",
+    "level": "hard",
+    "family": "consumer_product",
+    "prompt": "Design an adjustable desk lamp arm joint as editable CadQuery. Include two linked arms, pivot bosses, hinge pin holes, friction knobs, cable pass-throughs, and a small lamp head mount.",
+    "image_prompt": "Realistic CAD render of an adjustable desk lamp arm joint with linked arms, pivot bosses, hinge pin holes, knobs, cable pass-throughs, and lamp head mount, white background, no text.",
+    "semantic_hints": ["lamp_arm", "linked_arm", "pivot_boss", "hinge_pin_hole", "friction_knob", "cable_pass", "lamp_mount"],
+    "bbox_mm": [260, 80, 180]
+  },
+  {
+    "id": "robot_gripper_two_finger",
+    "level": "hard",
+    "family": "robotics",
+    "prompt": "Design a simple two-finger robot gripper as editable CadQuery. Include a palm block, two parallel fingers, pivot bosses, linkage bars, fingertip pads, and mounting holes.",
+    "image_prompt": "Realistic CAD render of a two-finger robot gripper with palm block, parallel fingers, pivot bosses, linkage bars, fingertip pads, and mounting holes, white background, no text.",
+    "semantic_hints": ["robot_gripper", "palm_block", "two_finger", "pivot_boss", "linkage_bar", "fingertip_pad", "mounting_hole"],
+    "bbox_mm": [160, 120, 60]
+  }
+]

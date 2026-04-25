@@ -10,7 +10,8 @@ const route = window.location.pathname;
 const isLandingPage = route === "/" || route === "/index.html";
 const isCadQueryGeneratorPage = route === "/cadquery";
 const isCadQueryRendererPage = route === "/cadquery-renderer";
-const isCadQueryPage = isCadQueryGeneratorPage || isCadQueryRendererPage;
+const isCadQueryEnvPage = route === "/cadquery-env";
+const isCadQueryPage = isCadQueryGeneratorPage || isCadQueryRendererPage || isCadQueryEnvPage;
 const isOpenScadPage = route === "/openscad" || (!isLandingPage && !isCadQueryPage);
 
 app.innerHTML = `
@@ -35,6 +36,11 @@ app.innerHTML = `
           <strong>Renderer test bench</strong>
           <small>Run known-good CadQuery code through the backend to verify Python, CadQuery, STL export, and frontend rendering.</small>
         </a>
+        <a class="route-card" href="/cadquery-env">
+          <span>RLVE</span>
+          <strong>Reward environment</strong>
+          <small>Generate, revise, render, and score Markus-chair CadQuery candidates against the ideal code and GLB reference.</small>
+        </a>
       </div>
     </section>
   </main>
@@ -46,11 +52,12 @@ app.innerHTML = `
         <a class="${isOpenScadPage ? "active" : ""}" href="/openscad">OpenSCAD</a>
         <a class="${isCadQueryGeneratorPage ? "active" : ""}" href="/cadquery">CadQuery</a>
         <a class="${isCadQueryRendererPage ? "active" : ""}" href="/cadquery-renderer">Renderer</a>
+        <a class="${isCadQueryEnvPage ? "active" : ""}" href="/cadquery-env">Env</a>
       </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
-        <h1>${isCadQueryRendererPage ? "CadQuery renderer test bench" : isCadQueryGeneratorPage ? "CadQuery generator" : "Markus chair CAD generator"}</h1>
-        <p class="intro">${isCadQueryRendererPage ? "Verify the real Python CadQuery backend, STL export path, and frontend mesh viewer with known-good code before testing generated CAD." : isCadQueryGeneratorPage ? "Generate or edit real CadQuery scripts in the backend, export STL, and inspect the generated mechanical mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
+        <h1>${isCadQueryEnvPage ? "CadQuery reward environment" : isCadQueryRendererPage ? "CadQuery renderer test bench" : isCadQueryGeneratorPage ? "CadQuery generator" : "Markus chair CAD generator"}</h1>
+        <p class="intro">${isCadQueryEnvPage ? "Generate or revise CadQuery in a REPL loop, render the model, and score it against the ideal Markus CadQuery model plus the GLB reference." : isCadQueryRendererPage ? "Verify the real Python CadQuery backend, STL export path, and frontend mesh viewer with known-good code before testing generated CAD." : isCadQueryGeneratorPage ? "Generate or edit real CadQuery scripts in the backend, export STL, and inspect the generated mechanical mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
       </div>
 
       <label class="${isCadQueryPage ? "hidden" : ""}" for="prompt">Design prompt</label>
@@ -84,6 +91,30 @@ app.innerHTML = `
         </div>
         <textarea id="cadquery-prompt" spellcheck="false">Design a simple 6061 aluminum wall-mounted J hook for a 120 N downward hanging load at the hook tip. It should have a filleted wall plate, four countersunk mounting holes, a curved J hook arm, and triangular gussets. Generate clean parametric CadQuery code.</textarea>
         <button id="generate-cadquery" class="primary generate-only">Generate</button>
+      </section>
+
+      <section class="scad-lab ${isCadQueryEnvPage ? "" : "hidden"}">
+        <div class="scad-lab-head">
+          <label for="cadquery-env-prompt">RLVE prompt</label>
+          <span>code REPL + reward</span>
+        </div>
+        <textarea id="cadquery-env-prompt" spellcheck="false">Create an editable CadQuery model of an IKEA Markus-like office chair. It should have a seat, tall backrest, headrest-like upper cushion, armrests, central gas cylinder, five-star base, and caster proxies. Prefer clear functions and named dimensions.</textarea>
+        <div class="env-row">
+          <label for="cadquery-provider">Provider</label>
+          <select id="cadquery-provider">
+            <option value="openai">OpenAI</option>
+            <option value="ollama">Ollama</option>
+          </select>
+          <label for="cadquery-model">Model</label>
+          <input id="cadquery-model" value="gpt-5.4" />
+        </div>
+        <div class="button-row">
+          <button id="env-generate-cadquery" class="primary">Generate</button>
+          <button id="env-revise-cadquery">Revise</button>
+          <button id="env-evaluate-cadquery">Evaluate</button>
+          <button id="env-load-ideal">Load Ideal</button>
+        </div>
+        <div id="cadquery-reward-output" class="scad-output">No reward yet.</div>
       </section>
 
       <section class="scad-lab ${isCadQueryPage ? "" : "hidden"}">
@@ -147,12 +178,20 @@ const renderScadButton = document.querySelector("#render-scad");
 const loadScadExampleButton = document.querySelector("#load-scad-example");
 const scadOutputEl = document.querySelector("#scad-output");
 const cadqueryPromptInput = document.querySelector("#cadquery-prompt");
+const cadqueryEnvPromptInput = document.querySelector("#cadquery-env-prompt");
+const cadqueryProviderSelect = document.querySelector("#cadquery-provider");
+const cadqueryModelInput = document.querySelector("#cadquery-model");
 const cadqueryCodeInput = document.querySelector("#cadquery-code");
 const generateCadqueryButton = document.querySelector("#generate-cadquery");
+const envGenerateCadqueryButton = document.querySelector("#env-generate-cadquery");
+const envReviseCadqueryButton = document.querySelector("#env-revise-cadquery");
+const envEvaluateCadqueryButton = document.querySelector("#env-evaluate-cadquery");
+const envLoadIdealButton = document.querySelector("#env-load-ideal");
 const renderCadqueryButton = document.querySelector("#render-cadquery");
 const testCadqueryBackendButton = document.querySelector("#test-cadquery-backend");
 const loadCadquerySampleButton = document.querySelector("#load-cadquery-sample");
 const cadqueryOutputEl = document.querySelector("#cadquery-output");
+const cadqueryRewardOutputEl = document.querySelector("#cadquery-reward-output");
 const agentStepsEl = document.querySelector("#agent-steps");
 const toolBudgetInput = document.querySelector("#tool-budget");
 const toolBudgetValue = document.querySelector("#tool-budget-value");
@@ -358,17 +397,45 @@ function renderCadqueryStl(result) {
   cadqueryOutputEl.textContent = result.repaired
     ? `Generated STL with ${Math.round(triangles)} triangles from real CadQuery. Repair applied: ${result.repair_note}`
     : `Generated STL with ${Math.round(triangles)} triangles from real CadQuery.`;
+  const rewardMetrics = result.reward
+    ? [
+        metric("Reward", Number(result.reward.total).toFixed(3)),
+        metric("Contact", Number(result.reward.contact || 0).toFixed(3)),
+        metric("Similarity", Number(result.reward.reference_similarity || 0).toFixed(3)),
+        metric("Semantic", Number(result.reward.semantic_parts || 0).toFixed(3))
+      ]
+    : [];
   metricsEl.innerHTML = [
     metric("Backend", "CadQuery"),
     metric("Triangles", Math.round(triangles)),
     metric("X size", size.x.toFixed(1), " mm"),
     metric("Y size", size.y.toFixed(1), " mm"),
     metric("Z size", size.z.toFixed(1), " mm"),
-    metric("Features", result.cadquery_features?.length || 0)
+    metric("Features", result.cadquery_features?.length || 0),
+    ...rewardMetrics
   ].join("");
   jsonEl.textContent = JSON.stringify({ ...result, stl_base64: `<${result.stl_base64.length} base64 chars>` }, null, 2);
   setStatus(`Rendered CadQuery STL in ${(result.elapsed_ms / 1000).toFixed(1)}s.`, "ok");
   window.setTimeout(() => captureViews({ silent: true }), 80);
+}
+
+function renderRewardSummary(result) {
+  if (!cadqueryRewardOutputEl || !result.reward) return;
+  const reward = result.reward;
+  const notes = (result.notes || []).map((note) => `<li>${note}</li>`).join("");
+  cadqueryRewardOutputEl.innerHTML = `
+    <strong>Total ${Number(reward.total).toFixed(3)}</strong>
+    <div class="reward-grid">
+      <span>build ${Number(reward.build).toFixed(3)}</span>
+      <span>topology ${Number(reward.topology).toFixed(3)}</span>
+      <span>contact ${Number(reward.contact || 0).toFixed(3)}</span>
+      <span>semantic ${Number(reward.semantic_parts).toFixed(3)}</span>
+      <span>reference ${Number(reward.reference_similarity).toFixed(3)}</span>
+      <span>silhouette ${Number(reward.silhouette).toFixed(3)}</span>
+      <span>editability ${Number(reward.editability).toFixed(3)}</span>
+    </div>
+    <ul>${notes}</ul>
+  `;
 }
 
 async function renderCadquerySample() {
@@ -489,6 +556,95 @@ async function generateCadqueryCode() {
   } finally {
     if (generateCadqueryButton) generateCadqueryButton.disabled = false;
     if (renderCadqueryButton) renderCadqueryButton.disabled = false;
+  }
+}
+
+async function evaluateCadqueryEnv({ rewardMode = "full" } = {}) {
+  setStatus(`Evaluating CadQuery reward (${rewardMode})...`, "working");
+  if (envEvaluateCadqueryButton) envEvaluateCadqueryButton.disabled = true;
+  try {
+    const response = await fetch("/api/cadquery/evaluate-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        cadquery_code: cadqueryCodeInput.value,
+        task_prompt: cadqueryEnvPromptInput?.value || cadqueryPromptInput?.value || "",
+        reward_mode: rewardMode,
+        episode_id: "frontend",
+        step_id: `step-${Date.now()}`
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery evaluation failed.", "error");
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return null;
+    }
+    renderRewardSummary(result);
+    if (result.stl_base64) renderCadqueryStl({ ...result, name: "CadQuery RLVE candidate" });
+    jsonEl.textContent = JSON.stringify({ ...result, stl_base64: result.stl_base64 ? `<${result.stl_base64.length} base64 chars>` : undefined }, null, 2);
+    setStatus(`Reward ${Number(result.reward.total).toFixed(3)} computed.`, "ok");
+    return result;
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery evaluation failed.", "error");
+    return null;
+  } finally {
+    if (envEvaluateCadqueryButton) envEvaluateCadqueryButton.disabled = false;
+  }
+}
+
+async function runCadqueryReplStep({ revise = false } = {}) {
+  setStatus(revise ? "Revising CadQuery with verifier context..." : "Generating CadQuery candidate...", "working");
+  if (envGenerateCadqueryButton) envGenerateCadqueryButton.disabled = true;
+  if (envReviseCadqueryButton) envReviseCadqueryButton.disabled = true;
+  let reward = null;
+  if (revise && cadqueryCodeInput.value.trim()) {
+    reward = await evaluateCadqueryEnv({ rewardMode: "fast" });
+  }
+  try {
+    const response = await fetch("/api/cadquery/repl-step", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: cadqueryEnvPromptInput?.value || cadqueryPromptInput?.value || "",
+        current_code: revise ? cadqueryCodeInput.value : "",
+        provider: cadqueryProviderSelect?.value || "openai",
+        model: cadqueryModelInput?.value || "",
+        reward
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery REPL step failed.", "error");
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return;
+    }
+    cadqueryCodeInput.value = result.cadquery_code || "";
+    cadqueryOutputEl.textContent = `${result.provider} ${result.model} returned a CadQuery candidate.`;
+    jsonEl.textContent = JSON.stringify({ ...result, cadquery_code: "<shown in editor>" }, null, 2);
+    await evaluateCadqueryEnv({ rewardMode: "full" });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery REPL step failed.", "error");
+  } finally {
+    if (envGenerateCadqueryButton) envGenerateCadqueryButton.disabled = false;
+    if (envReviseCadqueryButton) envReviseCadqueryButton.disabled = false;
+  }
+}
+
+async function loadIdealCadqueryCode() {
+  setStatus("Loading ideal Markus CadQuery code...", "working");
+  try {
+    const response = await fetch("/api/cadquery/ideal-code");
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "Could not load ideal CadQuery code.", "error");
+      return;
+    }
+    cadqueryCodeInput.value = result.cadquery_code || "";
+    cadqueryOutputEl.textContent = "Loaded ideal Markus CadQuery reference.";
+    await evaluateCadqueryEnv({ rewardMode: "full" });
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Could not load ideal CadQuery code.", "error");
   }
 }
 
@@ -1946,6 +2102,10 @@ if (exportButton) exportButton.addEventListener("click", exportStl);
 if (captureViewsButton) captureViewsButton.addEventListener("click", () => captureViews());
 if (generateScadButton) generateScadButton.addEventListener("click", () => generateScad(false));
 if (generateCadqueryButton) generateCadqueryButton.addEventListener("click", generateCadqueryCode);
+if (envGenerateCadqueryButton) envGenerateCadqueryButton.addEventListener("click", () => runCadqueryReplStep({ revise: false }));
+if (envReviseCadqueryButton) envReviseCadqueryButton.addEventListener("click", () => runCadqueryReplStep({ revise: true }));
+if (envEvaluateCadqueryButton) envEvaluateCadqueryButton.addEventListener("click", () => evaluateCadqueryEnv({ rewardMode: "full" }));
+if (envLoadIdealButton) envLoadIdealButton.addEventListener("click", loadIdealCadqueryCode);
 if (renderCadqueryButton) renderCadqueryButton.addEventListener("click", renderCadqueryCode);
 if (testCadqueryBackendButton) testCadqueryBackendButton.addEventListener("click", testCadqueryBackend);
 if (loadCadquerySampleButton) loadCadquerySampleButton.addEventListener("click", () => loadCadquerySampleCode({ render: false }));
@@ -2001,6 +2161,8 @@ if (isOpenScadPage) {
 
 if (isCadQueryRendererPage) {
   testCadqueryBackend();
+} else if (isCadQueryEnvPage) {
+  loadIdealCadqueryCode();
 } else if (isCadQueryGeneratorPage) {
   loadCadquerySampleCode({ render: true });
 }

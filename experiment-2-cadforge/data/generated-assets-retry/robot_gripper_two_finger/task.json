@@ -1,0 +1,21 @@
+{
+  "id": "robot_gripper_two_finger",
+  "level": "hard",
+  "family": "robotics",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4b1-7476-7751-8bb4-19abfe641431",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

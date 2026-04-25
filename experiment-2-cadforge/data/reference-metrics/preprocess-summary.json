@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table_six_leg_500n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/table_six_leg_500n"
+  },
+  {
+    "id": "four_leg_chair_700n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/four_leg_chair_700n"
+  },
+  {
+    "id": "wall_j_hook_120n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/wall_j_hook_120n"
+  },
+  {
+    "id": "shelf_bracket_triangular_200n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/shelf_bracket_triangular_200n"
+  },
+  {
+    "id": "drawer_handle_two_bolt",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt"
+  },
+  {
+    "id": "caster_wheel_fork",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork"
+  },
+  {
+    "id": "bike_accessory_mount_120n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/bike_accessory_mount_120n"
+  },
+  {
+    "id": "shaft_torque_clamp_120nm",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/shaft_torque_clamp_120nm"
+  },
+  {
+    "id": "axial_motor_stator_12_slot",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot"
+  },
+  {
+    "id": "lightweight_truss_support_250n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n"
+  },
+  {
+    "id": "phone_stand_adjustable_hinge",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/phone_stand_adjustable_hinge"
+  },
+  {
+    "id": "robot_servo_bracket",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/robot_servo_bracket"
+  },
+  {
+    "id": "ergonomic_curvy_chair_1000n",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/ergonomic_curvy_chair_1000n"
+  },
+  {
+    "id": "folding_step_stool",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/folding_step_stool"
+  },
+  {
+    "id": "bench_vise_simplified",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/bench_vise_simplified"
+  },
+  {
+    "id": "micro_drone_frame",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/micro_drone_frame"
+  },
+  {
+    "id": "gearbox_housing_split",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/gearbox_housing_split"
+  },
+  {
+    "id": "bottle_cage_bike",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/bottle_cage_bike"
+  },
+  {
+    "id": "laptop_riser_vented",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/laptop_riser_vented"
+  },
+  {
+    "id": "pipe_clamp_saddle",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/pipe_clamp_saddle"
+  },
+  {
+    "id": "hinge_leaf_barrel",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/hinge_leaf_barrel"
+  },
+  {
+    "id": "cable_clip_snap",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/cable_clip_snap"
+  },
+  {
+    "id": "desk_lamp_arm_joint",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/desk_lamp_arm_joint"
+  },
+  {
+    "id": "robot_gripper_two_finger",
+    "ok": true,
+    "outRoot": "experiment-2-cadforge/runs/cadquery-task-references/robot_gripper_two_finger"
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "shaft_torque_clamp_120nm",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/shaft_torque_clamp_120nm/reference.png'"
+  },
+  {
+    "id": "axial_motor_stator_12_slot",
+    "level": "medium",
+    "family": "electromechanical",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/axial_motor_stator_12_slot/reference.png'"
+  },
+  {
+    "id": "lightweight_truss_support_250n",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/lightweight_truss_support_250n/reference.png'"
+  },
+  {
+    "id": "folding_step_stool",
+    "level": "hard",
+    "family": "furniture",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/folding_step_stool/reference.png'"
+  },
+  {
+    "id": "micro_drone_frame",
+    "level": "hard",
+    "family": "robotics",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/micro_drone_frame/reference.png'"
+  },
+  {
+    "id": "bottle_cage_bike",
+    "level": "medium",
+    "family": "consumer_product",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/bottle_cage_bike/reference.png'"
+  },
+  {
+    "id": "pipe_clamp_saddle",
+    "level": "medium",
+    "family": "mechanical_fixture",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/pipe_clamp_saddle/reference.png'"
+  },
+  {
+    "id": "cable_clip_snap",
+    "level": "easy",
+    "family": "hardware",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/cable_clip_snap/reference.png'"
+  },
+  {
+    "id": "desk_lamp_arm_joint",
+    "level": "hard",
+    "family": "consumer_product",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/desk_lamp_arm_joint/reference.png'"
+  },
+  {
+    "id": "robot_gripper_two_finger",
+    "level": "hard",
+    "family": "robotics",
+    "ok": false,
+    "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/robot_gripper_two_finger/reference.png'"
+  }
+]

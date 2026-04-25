@@ -1,0 +1,7 @@
+{
+  "id": "robot_gripper_two_finger",
+  "level": "hard",
+  "family": "robotics",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/robot_gripper_two_finger/reference.png'"
+}

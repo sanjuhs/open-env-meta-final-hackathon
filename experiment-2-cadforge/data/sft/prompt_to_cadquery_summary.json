@@ -1,0 +1,184 @@
+{
+  "total": 25,
+  "train": 20,
+  "val": 5,
+  "min_reward": 0.7054805376673549,
+  "max_reward": 0.8877182735610779,
+  "tasks": [
+    {
+      "task_id": "axial_motor_stator_12_slot",
+      "reward_after": 0.7054805376673549,
+      "source_run_id": "openai-gpt-5.4-axial_motor_stator_12_slot-disconnected-2026-04-25T14-06-43-357Z",
+      "source_seed_kind": "disconnected",
+      "source_step": 2
+    },
+    {
+      "task_id": "bench_vise_simplified",
+      "reward_after": 0.7491152348540099,
+      "source_run_id": "openai-gpt-5.4-bench_vise_simplified-bad_dimensions-2026-04-25T13-35-45-586Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 2
+    },
+    {
+      "task_id": "bike_accessory_mount_120n",
+      "reward_after": 0.7300910704097827,
+      "source_run_id": "openai-gpt-5.4-bike_accessory_mount_120n-missing_features-2026-04-25T14-32-57-492Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 3
+    },
+    {
+      "task_id": "bottle_cage_bike",
+      "reward_after": 0.8210616216629151,
+      "source_run_id": "openai-gpt-5.4-bottle_cage_bike-missing_features-2026-04-25T14-36-57-835Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 3
+    },
+    {
+      "task_id": "cable_clip_snap",
+      "reward_after": 0.8113023910053361,
+      "source_run_id": "openai-gpt-5.4-cable_clip_snap-missing_features-2026-04-25T13-46-41-749Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 1
+    },
+    {
+      "task_id": "caster_wheel_fork",
+      "reward_after": 0.8146733832675295,
+      "source_run_id": "openai-gpt-5.4-caster_wheel_fork-bad_dimensions-2026-04-25T14-21-07-723Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 2
+    },
+    {
+      "task_id": "desk_lamp_arm_joint",
+      "reward_after": 0.7807658808409905,
+      "source_run_id": "openai-gpt-5.4-desk_lamp_arm_joint-build_error-2026-04-25T13-59-52-231Z",
+      "source_seed_kind": "build_error",
+      "source_step": 3
+    },
+    {
+      "task_id": "drawer_handle_two_bolt",
+      "reward_after": 0.7180893145437239,
+      "source_run_id": "openai-gpt-5.4-drawer_handle_two_bolt-weak-2026-04-25T14-32-21-951Z",
+      "source_seed_kind": "weak",
+      "source_step": 2
+    },
+    {
+      "task_id": "ergonomic_curvy_chair_1000n",
+      "reward_after": 0.8541917111221249,
+      "source_run_id": "openai-gpt-5.4-ergonomic_curvy_chair_1000n-disconnected-2026-04-25T14-08-42-464Z",
+      "source_seed_kind": "disconnected",
+      "source_step": 2
+    },
+    {
+      "task_id": "folding_step_stool",
+      "reward_after": 0.813944202061728,
+      "source_run_id": "openai-gpt-5.4-folding_step_stool-disconnected-2026-04-25T14-24-16-318Z",
+      "source_seed_kind": "disconnected",
+      "source_step": 3
+    },
+    {
+      "task_id": "four_leg_chair_700n",
+      "reward_after": 0.8599959024679281,
+      "source_run_id": "openai-gpt-5.4-four_leg_chair_700n-weak-2026-04-25T14-03-10-757Z",
+      "source_seed_kind": "weak",
+      "source_step": 1
+    },
+    {
+      "task_id": "gearbox_housing_split",
+      "reward_after": 0.8267042454680013,
+      "source_run_id": "openai-gpt-5.4-gearbox_housing_split-bad_dimensions-2026-04-25T13-39-49-703Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 2
+    },
+    {
+      "task_id": "hinge_leaf_barrel",
+      "reward_after": 0.8112359164589886,
+      "source_run_id": "openai-gpt-5.4-hinge_leaf_barrel-weak-2026-04-25T13-44-45-162Z",
+      "source_seed_kind": "weak",
+      "source_step": 2
+    },
+    {
+      "task_id": "laptop_riser_vented",
+      "reward_after": 0.7718193543034049,
+      "source_run_id": "openai-gpt-5.4-laptop_riser_vented-bad_dimensions-2026-04-25T14-13-56-213Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 2
+    },
+    {
+      "task_id": "lightweight_truss_support_250n",
+      "reward_after": 0.7341978227627808,
+      "source_run_id": "openai-gpt-5.4-lightweight_truss_support_250n-build_error-2026-04-25T13-55-35-164Z",
+      "source_seed_kind": "build_error",
+      "source_step": 3
+    },
+    {
+      "task_id": "markus-agentic-repair",
+      "reward_after": 0.7997447959252884,
+      "source_run_id": "openai-gpt-5.4-markus-agentic-repair-2026-04-25T11-56-38-955Z",
+      "source_seed_kind": null,
+      "source_step": 1
+    },
+    {
+      "task_id": "micro_drone_frame",
+      "reward_after": 0.709860054467258,
+      "source_run_id": "openai-gpt-5.4-micro_drone_frame-weak-2026-04-25T14-10-53-850Z",
+      "source_seed_kind": "weak",
+      "source_step": 1
+    },
+    {
+      "task_id": "phone_stand_adjustable_hinge",
+      "reward_after": 0.8877182735610779,
+      "source_run_id": "openai-gpt-5.4-phone_stand_adjustable_hinge-missing_features-2026-04-25T14-07-21-680Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 1
+    },
+    {
+      "task_id": "pipe_clamp_saddle",
+      "reward_after": 0.7701468324799035,
+      "source_run_id": "openai-gpt-5.4-pipe_clamp_saddle-missing_features-2026-04-25T13-43-47-973Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 3
+    },
+    {
+      "task_id": "robot_gripper_two_finger",
+      "reward_after": 0.8166683289284298,
+      "source_run_id": "openai-gpt-5.4-robot_gripper_two_finger-missing_features-2026-04-25T14-39-27-233Z",
+      "source_seed_kind": "missing_features",
+      "source_step": 3
+    },
+    {
+      "task_id": "robot_servo_bracket",
+      "reward_after": 0.8203647151934953,
+      "source_run_id": "openai-gpt-5.4-robot_servo_bracket-weak-2026-04-25T14-08-28-156Z",
+      "source_seed_kind": "weak",
+      "source_step": 1
+    },
+    {
+      "task_id": "shaft_torque_clamp_120nm",
+      "reward_after": 0.7768046571109006,
+      "source_run_id": "openai-gpt-5.4-shaft_torque_clamp_120nm-disconnected-2026-04-25T14-33-10-175Z",
+      "source_seed_kind": "disconnected",
+      "source_step": 2
+    },
+    {
+      "task_id": "shelf_bracket_triangular_200n",
+      "reward_after": 0.7907908630726537,
+      "source_run_id": "openai-gpt-5.4-shelf_bracket_triangular_200n-weak-2026-04-25T14-04-07-109Z",
+      "source_seed_kind": "weak",
+      "source_step": 2
+    },
+    {
+      "task_id": "table_six_leg_500n",
+      "reward_after": 0.8199660731391353,
+      "source_run_id": "openai-gpt-5.4-table_six_leg_500n-bad_dimensions-2026-04-25T14-03-10-176Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 2
+    },
+    {
+      "task_id": "wall_j_hook_120n",
+      "reward_after": 0.8001073240434234,
+      "source_run_id": "openai-gpt-5.4-wall_j_hook_120n-bad_dimensions-2026-04-25T14-20-18-147Z",
+      "source_seed_kind": "bad_dimensions",
+      "source_step": 3
+    }
+  ]
+}

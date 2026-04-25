@@ -1,0 +1,7 @@
+{
+  "id": "shaft_torque_clamp_120nm",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/shaft_torque_clamp_120nm/reference.png'"
+}

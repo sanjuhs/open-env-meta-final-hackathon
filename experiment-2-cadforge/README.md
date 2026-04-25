@@ -1,3 +1,18 @@
+---
+title: CADForge CadQuery
+emoji: 🪑
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 8000
+base_path: /web
+tags:
+  - openenv
+  - cadquery
+  - reinforcement-learning
+---
+
 # CADForge Experiment 2
 
 Local prototype for a multi-step CADForge environment: prompt -> CSG/CAD actions -> geometry validation -> structural household part scoring.
@@ -21,6 +36,26 @@ LLMs can often describe a chair, hook, or bracket, but they are unreliable at ma
 - structural safety under load.
 
 The long-term target is an OpenEnv-compatible RLVE environment where an agent can take 100-300 CAD actions before committing a valid part.
+
+## OpenEnv Space
+
+This directory is now a deployable OpenEnv environment named `cadforge_cadquery`.
+The action is a complete CadQuery Python file. The environment runs it through a constrained CadQuery runner, exports STL, scores build/topology/contact/task semantics/reference similarity/editability, and returns reward JSON plus verifier notes.
+
+Local validation:
+
+```bash
+../.venv/bin/openenv validate .
+PYTHONPATH=python_tools ../.venv/bin/uvicorn server.app:app --host 0.0.0.0 --port 8000
+OPENENV_BASE_URL=http://localhost:8000 ../.venv/bin/python inference.py
+```
+
+Push to Hugging Face Spaces:
+
+```bash
+set -a; source ../.env; set +a
+../.venv/bin/openenv push . --repo-id sanjuhs/cadforge-cadquery-openenv --interface
+```
 
 ## Setup
 
@@ -155,4 +190,3 @@ Headless smoke test:
 ```bash
 PYTHONPATH=experiment-2-cadforge/python_tools .venv/bin/python -m mechforge.cli sample
 ```
-

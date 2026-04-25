@@ -1,0 +1,11 @@
+{
+  "source": "experiment-2-cadforge/data/sft/cadquery_agentic_sft_positive_060.jsonl",
+  "total": 704,
+  "train": 633,
+  "val": 71,
+  "byBucket": {
+    "0.7-0.8": 360,
+    ">=0.8": 76,
+    "0.6-0.7": 268
+  }
+}

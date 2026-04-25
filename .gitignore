@@ -34,6 +34,30 @@ runs/
 .env
 **/.env
 
+# CADForge generated datasets and heavy artifacts
+experiment-2-cadforge/data/generated-assets/
+experiment-2-cadforge/data/sft/*.jsonl
+experiment-2-cadforge/data/preferences/*.jsonl
+experiment-2-cadforge/data/rl/*.jsonl
+experiment-2-cadforge/data/token_estimate.json
+experiment-2-cadforge/runs/
+experiment-2-cadforge/reports/agentic-traces/
+experiment-2-cadforge/reports/*.json
+experiment-2-cadforge/reports/*benchmark*.md
+experiment-2-cadforge/outputs/
+training/output/
+training/outputs/
+outputs/
+wandb/
+runs/
+trackio/
+*.glb
+*.stl
+*.npy
+*.step
+*.brep
+*.3mf
+
 # OS/editor noise
 .DS_Store
 *.swp

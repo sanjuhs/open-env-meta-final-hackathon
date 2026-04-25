@@ -1,0 +1,21 @@
+{
+  "id": "micro_drone_frame",
+  "level": "hard",
+  "family": "robotics",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4b0-192c-7ea0-ba38-81329caefd18",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

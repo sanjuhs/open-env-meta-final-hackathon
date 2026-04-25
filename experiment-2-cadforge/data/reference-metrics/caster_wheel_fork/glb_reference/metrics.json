@@ -1,0 +1,46 @@
+{
+  "name": "glb_reference",
+  "stl_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/glb_reference_normalized.stl",
+  "points_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/points.npy",
+  "silhouettes": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/caster_wheel_fork/glb_reference/silhouettes/isometric.png"
+  },
+  "bbox": {
+    "xmin": -0.47070544958114624,
+    "xmax": 0.4706840217113495,
+    "ymin": -0.14534832537174225,
+    "ymax": 0.14655442535877228,
+    "zmin": -0.49963924288749695,
+    "zmax": 0.4995918273925781,
+    "xlen": 0.9413894712924957,
+    "ylen": 0.2919027507305145,
+    "zlen": 0.9992310702800751
+  },
+  "normalized_bbox": {
+    "xmin": -471.05694533129014,
+    "xmax": 471.05694533129014,
+    "ymin": -146.06368807602075,
+    "ymax": 146.06368807602075,
+    "zmin": 0.0,
+    "zmax": 1000.0,
+    "xlen": 942.1138906625803,
+    "ylen": 292.1273761520415,
+    "zlen": 1000.0
+  },
+  "topology": {
+    "vertices": 10096,
+    "faces": 14912,
+    "components": 157,
+    "floating_components": 156,
+    "watertight": false,
+    "winding_consistent": true,
+    "boundary_edges": 5050,
+    "non_manifold_edges": 0,
+    "degenerate_faces": 0
+  }
+}

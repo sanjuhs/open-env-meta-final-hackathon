@@ -1,0 +1,46 @@
+{
+  "name": "glb_reference",
+  "stl_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/glb_reference_normalized.stl",
+  "points_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/points.npy",
+  "silhouettes": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/axial_motor_stator_12_slot/glb_reference/silhouettes/isometric.png"
+  },
+  "bbox": {
+    "xmin": -0.4941594898700714,
+    "xmax": 0.49352216720581055,
+    "ymin": -0.11855591088533401,
+    "ymax": 0.11610560864210129,
+    "zmin": -0.49942928552627563,
+    "zmax": 0.4997509717941284,
+    "xlen": 0.987681657075882,
+    "ylen": 0.2346615195274353,
+    "zlen": 0.999180257320404
+  },
+  "normalized_bbox": {
+    "xmin": -494.24598306447774,
+    "xmax": 494.24598306447774,
+    "ymin": -117.42701970350637,
+    "ymax": 117.42701970350637,
+    "zmin": 0.0,
+    "zmax": 1000.0,
+    "xlen": 988.4919661289555,
+    "ylen": 234.85403940701275,
+    "zlen": 1000.0
+  },
+  "topology": {
+    "vertices": 30757,
+    "faces": 45620,
+    "components": 552,
+    "floating_components": 551,
+    "watertight": false,
+    "winding_consistent": true,
+    "boundary_edges": 14966,
+    "non_manifold_edges": 0,
+    "degenerate_faces": 0
+  }
+}

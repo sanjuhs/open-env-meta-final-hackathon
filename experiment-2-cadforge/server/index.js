@@ -2049,6 +2049,63 @@ async function generateCadqueryWithModel({ prompt }) {
   };
 }
 
+async function generateCadqueryCodeText({ prompt, currentCode = "", reward = null, provider = "openai", model = "" }) {
+  const system = [
+    cadquerySystemPrompt(),
+    "You are working in a code-editing CAD REPL.",
+    "Return only the complete updated CadQuery Python file. Do not return explanations outside code."
+  ].join("\n\n");
+  const user = [
+    `Task: ${prompt}`,
+    currentCode ? `Current CadQuery code:\n${currentCode}` : "No current code yet. Create the first candidate.",
+    reward ? `Last reward/verifier JSON:\n${JSON.stringify(reward, null, 2)}` : "",
+    "Write a robust, executable, editable CadQuery candidate."
+  ].filter(Boolean).join("\n\n");
+
+  if (provider === "ollama") {
+    const ollamaModel = model || process.env.OLLAMA_MODEL || "qwen3.5:0.8b";
+    const response = await fetch(process.env.OLLAMA_URL || "http://localhost:11434/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: ollamaModel,
+        stream: false,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user }
+        ]
+      })
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || `Ollama request failed with status ${response.status}`);
+    }
+    return {
+      provider: "ollama",
+      model: ollamaModel,
+      cadquery_code: cleanCadqueryCode(result.message?.content || result.response || "")
+    };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is missing. OpenAI CadQuery generation requires a configured model API key.");
+  }
+  const openaiModel = model || process.env.MODEL_NAME || "gpt-5.4";
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const response = await client.responses.create({
+    model: openaiModel,
+    input: [
+      { role: "system", content: system },
+      { role: "user", content: user }
+    ]
+  });
+  return {
+    provider: "openai",
+    model: openaiModel,
+    cadquery_code: cleanCadqueryCode(response.output_text || "")
+  };
+}
+
 async function generateScadWithModel({ prompt, previousScad = "", renderStats = null }) {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY is missing. Real SCAD generation requires a configured model API key.");
@@ -2577,6 +2634,62 @@ function cadqueryResultToResponse({ result, startedAt, source }) {
   }
 }
 
+function parsePythonJsonStdout(stdout) {
+  const text = String(stdout || "").trim();
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end < start) {
+    throw new Error("Python command did not return JSON.");
+  }
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+function cadqueryEnvResponse({ result, startedAt, source }) {
+  if (result.error) {
+    return {
+      status: 500,
+      body: {
+        source,
+        error: result.error.message,
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+  if (result.status !== 0) {
+    return {
+      status: 500,
+      body: {
+        source,
+        error: `CadQuery environment exited with status ${result.status}`,
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+  try {
+    return {
+      status: 200,
+      body: {
+        source,
+        elapsed_ms: Date.now() - startedAt,
+        ...parsePythonJsonStdout(result.stdout),
+        stderr: result.stderr
+      }
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      body: {
+        source,
+        error: error instanceof Error ? error.message : "Failed to parse CadQuery environment output.",
+        stdout: result.stdout,
+        stderr: result.stderr
+      }
+    };
+  }
+}
+
 app.get("/api/cadquery/sample-code", (req, res) => {
   const scriptPath = path.join(appRoot, "python_tools", "cadquery_samples", "heavy_duty_hook_query.py");
   try {
@@ -2587,6 +2700,39 @@ app.get("/api/cadquery/sample-code", (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : "Could not read CadQuery sample code." });
   }
+});
+
+app.get("/api/cadquery/ideal-code", (req, res) => {
+  const scriptPath = path.join(appRoot, "..", "3d-models", "ikea_markus_idealish_code.md");
+  try {
+    const text = readFileSync(scriptPath, "utf8");
+    const match = text.match(/```(?:python|py)?\s*\n([\s\S]*?)```/i);
+    res.json({
+      source: "cadquery_ideal_markus_code",
+      cadquery_code: match ? match[1].trim() : text.trim()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Could not read ideal Markus CadQuery code." });
+  }
+});
+
+app.get("/api/cadquery/reference", (req, res) => {
+  loadEnv();
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_env.py");
+  const pythonPath = path.join(appRoot, "python_tools");
+  const startedAt = Date.now();
+  const result = spawnSync(pythonBin, [scriptPath, "preprocess-reference"], {
+    cwd: appRoot,
+    encoding: "utf8",
+    timeout: 240000,
+    env: {
+      ...process.env,
+      PYTHONPATH: pythonPath,
+      XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+    }
+  });
+  const response = cadqueryEnvResponse({ result, startedAt, source: "cadquery_reference_preprocess" });
+  res.status(response.status).json(response.body);
 });
 
 app.post("/api/cadquery/health", async (req, res) => {
@@ -2640,6 +2786,25 @@ app.post("/api/cadquery/generate", async (req, res) => {
   }
 });
 
+app.post("/api/cadquery/repl-step", async (req, res) => {
+  loadEnv();
+  const prompt = String(req.body?.prompt || "").trim();
+  const currentCode = String(req.body?.current_code || req.body?.cadquery_code || "").trim();
+  const provider = String(req.body?.provider || "openai").toLowerCase() === "ollama" ? "ollama" : "openai";
+  const model = String(req.body?.model || "").trim();
+  const reward = req.body?.reward && typeof req.body.reward === "object" ? req.body.reward : null;
+  if (!prompt) {
+    res.status(400).json({ error: "Prompt is required." });
+    return;
+  }
+  try {
+    const result = await generateCadqueryCodeText({ prompt, currentCode, reward, provider, model });
+    res.json({ source: "cadquery_repl_step", ...result });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Unknown CadQuery REPL generation error" });
+  }
+});
+
 app.post("/api/cadquery/render-code", async (req, res) => {
   loadEnv();
   const code = String(req.body?.cadquery_code || "").trim();
@@ -2681,6 +2846,49 @@ app.post("/api/cadquery/render-code", async (req, res) => {
           original_stderr: originalFailure.stderr
         };
       }
+    }
+  }
+  res.status(response.status).json(response.body);
+});
+
+app.post("/api/cadquery/evaluate-code", async (req, res) => {
+  loadEnv();
+  const code = String(req.body?.cadquery_code || req.body?.code || "").trim();
+  const episodeId = String(req.body?.episode_id || "api");
+  const stepId = String(req.body?.step_id || `step-${Date.now()}`);
+  const taskPrompt = String(req.body?.task_prompt || "");
+  const rewardMode = String(req.body?.reward_mode || "full") === "fast" ? "fast" : "full";
+  if (!code) {
+    res.status(400).json({ error: "CadQuery code is required." });
+    return;
+  }
+
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_env.py");
+  const pythonPath = path.join(appRoot, "python_tools");
+  const startedAt = Date.now();
+  const result = spawnSync(
+    pythonBin,
+    [scriptPath, "evaluate", "--episode-id", episodeId, "--step-id", stepId, "--task-prompt", taskPrompt, "--reward-mode", rewardMode],
+    {
+      cwd: appRoot,
+      input: JSON.stringify({ code }),
+      encoding: "utf8",
+      timeout: 240000,
+      env: {
+        ...process.env,
+        PYTHONPATH: pythonPath,
+        XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+      }
+    }
+  );
+  const response = cadqueryEnvResponse({ result, startedAt, source: "cadquery_environment_evaluator" });
+  if (response.status === 200 && response.body?.candidate_stl) {
+    try {
+      const stl = readFileSync(response.body.candidate_stl);
+      response.body.stl_base64 = stl.toString("base64");
+      response.body.stl_bytes = stl.length;
+    } catch {
+      // Evaluation still succeeded; leave render payload absent if the STL cannot be read.
     }
   }
   res.status(response.status).json(response.body);

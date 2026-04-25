@@ -1,0 +1,7 @@
+{
+  "id": "folding_step_stool",
+  "level": "hard",
+  "family": "furniture",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/folding_step_stool/reference.png'"
+}

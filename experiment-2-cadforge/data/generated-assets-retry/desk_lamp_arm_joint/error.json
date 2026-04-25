@@ -1,0 +1,7 @@
+{
+  "id": "desk_lamp_arm_joint",
+  "level": "hard",
+  "family": "consumer_product",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/desk_lamp_arm_joint/reference.png'"
+}

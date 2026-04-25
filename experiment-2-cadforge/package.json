@@ -7,9 +7,14 @@
     "dev": "concurrently \"node server/index.js\" \"vite --host 0.0.0.0 --port 5177\"",
     "server": "node server/index.js",
     "client": "vite --host 0.0.0.0",
-    "check": "node --check server/index.js && node --check src/main.js"
+    "check": "node --check server/index.js && node --check src/main.js",
+    "env:smoke": "../scripts/experiment-2/smoke-cadquery-env.sh --episodes 2",
+    "env:smoke:fast": "../scripts/experiment-2/smoke-cadquery-env.sh --episodes 2 --reward-mode fast",
+    "benchmark:gpt:dry": "../scripts/experiment-2/run-gpt-cadquery-benchmark.js --tasks 2 --attempts 2",
+    "benchmark:gpt": "../scripts/experiment-2/run-gpt-cadquery-benchmark.js --run"
   },
   "dependencies": {
+    "@fal-ai/client": "^1.10.0",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

@@ -1,0 +1,46 @@
+{
+  "name": "glb_reference",
+  "stl_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/glb_reference_normalized.stl",
+  "points_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/points.npy",
+  "silhouettes": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/drawer_handle_two_bolt/glb_reference/silhouettes/isometric.png"
+  },
+  "bbox": {
+    "xmin": -0.1028265580534935,
+    "xmax": 0.10273607075214386,
+    "ymin": -0.1661052405834198,
+    "ymax": 0.166839137673378,
+    "zmin": -0.500136137008667,
+    "zmax": 0.49994781613349915,
+    "xlen": 0.20556262880563736,
+    "ylen": 0.3329443782567978,
+    "zlen": 1.0000839531421661
+  },
+  "normalized_bbox": {
+    "xmin": -102.77268631287384,
+    "xmax": 102.77268631287384,
+    "ymin": -166.45821443825741,
+    "ymax": 166.45821443825741,
+    "zmin": 0.0,
+    "zmax": 1000.0,
+    "xlen": 205.5453726257477,
+    "ylen": 332.91642887651483,
+    "zlen": 1000.0
+  },
+  "topology": {
+    "vertices": 2037,
+    "faces": 3128,
+    "components": 37,
+    "floating_components": 36,
+    "watertight": false,
+    "winding_consistent": true,
+    "boundary_edges": 890,
+    "non_manifold_edges": 0,
+    "degenerate_faces": 0
+  }
+}

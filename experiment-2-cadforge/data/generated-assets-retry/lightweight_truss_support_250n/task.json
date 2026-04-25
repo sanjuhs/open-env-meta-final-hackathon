@@ -1,0 +1,21 @@
+{
+  "id": "lightweight_truss_support_250n",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4af-0d95-72a2-965b-474c79f9cb5b",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

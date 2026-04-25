@@ -1,0 +1,21 @@
+{
+  "id": "axial_motor_stator_12_slot",
+  "level": "medium",
+  "family": "electromechanical",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4af-0342-7830-a295-35a3d2d56354",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

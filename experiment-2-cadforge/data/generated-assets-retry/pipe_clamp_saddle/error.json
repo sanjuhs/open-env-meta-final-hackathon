@@ -1,0 +1,7 @@
+{
+  "id": "pipe_clamp_saddle",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/pipe_clamp_saddle/reference.png'"
+}

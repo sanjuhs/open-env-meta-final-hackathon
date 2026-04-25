@@ -1,0 +1,21 @@
+{
+  "id": "cable_clip_snap",
+  "level": "easy",
+  "family": "hardware",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4b1-30b4-7e73-b002-f2870b3e7497",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

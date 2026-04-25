@@ -1,0 +1,9 @@
+{
+  "id": "folding_step_stool",
+  "level": "hard",
+  "family": "furniture",
+  "ok": false,
+  "error": "HTTP 502: Bad Gateway",
+  "status": 502,
+  "requestId": ""
+}

@@ -1,0 +1,21 @@
+{
+  "id": "pipe_clamp_saddle",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "Unprocessable Entity",
+  "status": 422,
+  "requestId": "019dc4b0-fdec-74c2-b2b6-fad04107ef2e",
+  "body": {
+    "detail": [
+      {
+        "loc": [
+          "body",
+          "prompt"
+        ],
+        "msg": "Auto-segmentation produced no masks. Try a different prompt, provide mask_urls, or lower detection_threshold (currently None).",
+        "type": "value_error"
+      }
+    ]
+  }
+}

@@ -2,19 +2,16 @@ from __future__ import annotations
 
 from openenv.core.env_server.http_server import create_app
 
-from .mechforge_environment import MechForgeEnvironment
-from .openenv_models import MechForgeAction, MechForgeObservation
-
-
-_SHARED_ENV = MechForgeEnvironment()
+from .cadforge_environment import CadForgeCadQueryEnvironment
+from .openenv_models import CadForgeAction, CadForgeObservation
 
 
 app = create_app(
-    lambda: _SHARED_ENV,
-    MechForgeAction,
-    MechForgeObservation,
-    env_name="mechforge_3d",
-    max_concurrent_envs=1,
+    CadForgeCadQueryEnvironment,
+    CadForgeAction,
+    CadForgeObservation,
+    env_name="cadforge_cadquery",
+    max_concurrent_envs=4,
 )
 
 

@@ -1,0 +1,64 @@
+{
+  "source_glb": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/data/generated-assets/lightweight_truss_support_250n/reference.glb",
+  "source_ideal_code": null,
+  "glb_reference": {
+    "name": "glb_reference",
+    "stl_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/glb_reference_normalized.stl",
+    "points_path": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/points.npy",
+    "silhouettes": {
+      "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/front.png",
+      "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/back.png",
+      "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/left.png",
+      "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/right.png",
+      "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/top.png",
+      "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-task-references/lightweight_truss_support_250n/glb_reference/silhouettes/isometric.png"
+    },
+    "bbox": {
+      "xmin": -0.18745824694633484,
+      "xmax": 0.19130679965019226,
+      "ymin": -0.06711586564779282,
+      "ymax": 0.07042054831981659,
+      "zmin": -0.49999773502349854,
+      "zmax": 0.4996877610683441,
+      "xlen": 0.3787650465965271,
+      "ylen": 0.1375364139676094,
+      "zlen": 0.9996854960918427
+    },
+    "normalized_bbox": {
+      "xmin": -189.44210358020908,
+      "xmax": 189.44210358020908,
+      "ymin": -68.78984165784763,
+      "ymax": 68.78984165784763,
+      "zmin": 0.0,
+      "zmax": 1000.0,
+      "xlen": 378.88420716041816,
+      "ylen": 137.57968331569526,
+      "zlen": 1000.0
+    },
+    "topology": {
+      "vertices": 2875,
+      "faces": 4090,
+      "components": 61,
+      "floating_components": 60,
+      "watertight": false,
+      "winding_consistent": true,
+      "boundary_edges": 1556,
+      "non_manifold_edges": 0,
+      "degenerate_faces": 0
+    }
+  },
+  "ideal_cadquery": null,
+  "ideal_vs_glb_correlation": null,
+  "semantic_hints": [
+    "seat",
+    "backrest",
+    "headrest",
+    "armrest",
+    "gas_cylinder",
+    "central_column",
+    "star_base",
+    "caster",
+    "lumbar",
+    "mechanism"
+  ]
+}

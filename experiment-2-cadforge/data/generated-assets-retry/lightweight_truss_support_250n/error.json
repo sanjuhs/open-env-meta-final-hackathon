@@ -1,0 +1,7 @@
+{
+  "id": "lightweight_truss_support_250n",
+  "level": "medium",
+  "family": "mechanical_fixture",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/lightweight_truss_support_250n/reference.png'"
+}

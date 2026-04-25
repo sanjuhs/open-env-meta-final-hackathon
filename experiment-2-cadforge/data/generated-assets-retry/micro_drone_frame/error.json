@@ -1,0 +1,7 @@
+{
+  "id": "micro_drone_frame",
+  "level": "hard",
+  "family": "robotics",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/micro_drone_frame/reference.png'"
+}

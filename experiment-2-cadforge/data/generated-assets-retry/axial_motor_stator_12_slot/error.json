@@ -1,0 +1,7 @@
+{
+  "id": "axial_motor_stator_12_slot",
+  "level": "medium",
+  "family": "electromechanical",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/axial_motor_stator_12_slot/reference.png'"
+}

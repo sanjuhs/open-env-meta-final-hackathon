@@ -1,0 +1,7 @@
+{
+  "id": "bottle_cage_bike",
+  "level": "medium",
+  "family": "consumer_product",
+  "ok": false,
+  "error": "ENOENT: no such file or directory, open 'experiment-2-cadforge/data/generated-assets-retry/bottle_cage_bike/reference.png'"
+}
