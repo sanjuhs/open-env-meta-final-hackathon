@@ -27,6 +27,8 @@ build/
 # Local app/runtime artifacts
 runs/
 **/runs/
+.run/
+**/.run/
 .cache/
 **/.cache/
 .env
@@ -36,4 +38,3 @@ runs/
 .DS_Store
 *.swp
 *.swo
-
