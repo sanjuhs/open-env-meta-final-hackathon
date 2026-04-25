@@ -1954,14 +1954,18 @@ function defaultSystemPrompt() {
 
 function scadSystemPrompt() {
   return [
-    "You are CADForge SCAD, a careful OpenSCAD code generator for functional mechanical objects.",
-    "Return real OpenSCAD code, not pseudocode.",
+    "You are CADForge SCAD, a careful multi-step OpenSCAD code generator for functional mechanical objects.",
+    "Return real OpenSCAD code, not pseudocode, and improve the candidate like an agent using verifier feedback.",
     "Use only this currently renderable subset: cube, sphere, cylinder, translate, rotate, scale, union, difference, and intersection.",
     "Use numeric constants directly. Do not use modules, variables, loops, list comprehensions, hull, minkowski, text, import, surface, or unsupported functions.",
-    "Prefer one connected solid. Avoid floating parts by making primitives overlap or touch.",
-    "For chairs, include a seat panel, four connected legs, lower crossbars, and a backrest.",
+    "Keep the candidate renderer-safe: no more than 16 visible primitives and use $fn no higher than 16.",
+    "Prefer one connected solid. Avoid floating parts by making primitives overlap by 1-4 mm before union.",
+    "For Markus-like chairs, include these connected semantic parts: broad seat pan, tall backrest, upper headrest-like pad, two armrests, central gas cylinder, central hub, five-star base spokes, and simple caster proxies.",
+    "For a five-star base without loops, explicitly write five rotated or translated spokes. Every spoke must overlap the hub.",
+    "Make the chair taller than it is wide, with the backrest connected to the seat and the column/base connected to the underside of the seat.",
+    "If verifier stats report floating_parts, multiple connected_components, boundary_edges, or non_manifold_edges, fix topology before adding detail.",
     "Use difference for holes only when the cutting primitive fully passes through the target.",
-    "Keep code compact and readable."
+    "Keep code compact and readable, but complete enough to visibly read as an office chair."
   ].join("\n");
 }
 
@@ -1981,7 +1985,8 @@ async function generateScadWithModel({ prompt, previousScad = "", renderStats = 
     ? [
         prompt,
         "",
-        "Revise the existing OpenSCAD code to better satisfy the prompt and render cleanly.",
+        "Revise the existing OpenSCAD code to better satisfy the prompt, the Markus-chair target, and the verifier feedback.",
+        "Treat the verifier feedback as tool output from the environment. First repair compile/topology problems, then improve chair likeness.",
         "Existing SCAD:",
         previousScad,
         "",

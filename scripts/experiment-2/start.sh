@@ -39,13 +39,14 @@ echo "Starting Experiment 2 frontend on http://localhost:${VITE_PORT}"
 (
   cd "${APP_DIR}"
   nohup env \
+    PORT="${PORT}" \
     VITE_PORT="${VITE_PORT}" \
     npm exec -- vite --host 0.0.0.0 --port "${VITE_PORT}" > "${LOG_DIR}/frontend.log" 2>&1 &
   echo "$!" > "$(pid_file_for frontend)"
 )
 
 sleep 1
-"${SCRIPT_DIR}/status.sh"
+PORT="${PORT}" VITE_PORT="${VITE_PORT}" "${SCRIPT_DIR}/status.sh"
 
 echo
 echo "Logs:"

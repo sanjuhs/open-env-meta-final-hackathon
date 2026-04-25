@@ -18,4 +18,4 @@ stop_port_processes backend "${PORT}"
 rm -f "$(pid_file_for frontend)" "$(pid_file_for backend)"
 
 echo "Experiment 2 stop requested."
-"${SCRIPT_DIR}/status.sh"
+PORT="${PORT}" VITE_PORT="${VITE_PORT}" "${SCRIPT_DIR}/status.sh"

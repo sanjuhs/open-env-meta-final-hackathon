@@ -162,6 +162,9 @@ function prepareMesh(mesh) {
 }
 
 function evaluateBoolean(children, operation, material) {
+  if (operation === "union" && children.length > 24) {
+    throw new Error(`Renderer safety limit: union has ${children.length} children. Keep generated SCAD to 24 or fewer union children so the browser CSG step cannot hang.`);
+  }
   let result = prepareMesh(evaluateNode(children[0], material));
   for (const child of children.slice(1)) {
     const next = prepareMesh(evaluateNode(child, material));
@@ -184,7 +187,8 @@ function evaluateNode(node, material) {
 
   if (node.name === "sphere") {
     const radius = Math.max(firstNumber(node, ["r"], Number(node.named.d || 2) / 2 || 1), 0.01);
-    return new THREE.Mesh(new THREE.SphereGeometry(radius, Number(node.named.$fn || 32), 16), material);
+    const segments = Math.min(Math.max(Number(node.named.$fn || 16), 8), 24);
+    return new THREE.Mesh(new THREE.SphereGeometry(radius, segments, 12), material);
   }
 
   if (node.name === "cylinder") {
@@ -194,7 +198,8 @@ function evaluateNode(node, material) {
     const r2Raw = node.named.r2 ?? (node.named.d2 === undefined ? undefined : Number(node.named.d2) / 2) ?? radius;
     const r1 = Math.max(Number(r1Raw), 0.01);
     const r2 = Math.max(Number(r2Raw), 0.01);
-    const geometry = new THREE.CylinderGeometry(r2, r1, height, Number(node.named.$fn || 48));
+    const segments = Math.min(Math.max(Number(node.named.$fn || 16), 8), 24);
+    const geometry = new THREE.CylinderGeometry(r2, r1, height, segments);
     geometry.rotateX(Math.PI / 2);
     const mesh = new THREE.Mesh(geometry, material);
     if (node.named.center !== true) mesh.position.z = height / 2;
@@ -247,10 +252,17 @@ export function renderScadToGroup(source, material) {
   const parser = new ScadParser(source);
   const nodes = parser.parseProgram();
   if (!nodes.length) throw new Error("SCAD input did not contain any renderable geometry.");
+  const complexity = countRenderableNodes(nodes);
+  if (complexity.primitives > 24) {
+    throw new Error(`Renderer safety limit: ${complexity.primitives} primitives. Keep generated SCAD to 24 or fewer primitives.`);
+  }
   const mesh = nodes.length === 1 ? evaluateNode(nodes[0], material) : evaluateBoolean(nodes, "union", material);
   mesh.geometry.computeBoundingBox();
   mesh.geometry.computeBoundingSphere();
   const topology = analyzeMeshTopology(mesh.geometry);
+  const box = mesh.geometry.boundingBox;
+  const dimensions = new THREE.Vector3();
+  box.getSize(dimensions);
   const group = new THREE.Group();
   group.add(mesh);
   return {
@@ -258,6 +270,15 @@ export function renderScadToGroup(source, material) {
     stats: {
       root_nodes: nodes.length,
       triangles: mesh.geometry.index ? mesh.geometry.index.count / 3 : mesh.geometry.attributes.position.count / 3,
+      bounding_box: {
+        min: [box.min.x, box.min.y, box.min.z],
+        max: [box.max.x, box.max.y, box.max.z]
+      },
+      dimensions: {
+        x: dimensions.x,
+        y: dimensions.y,
+        z: dimensions.z
+      },
       connected_components: topology.connected_components,
       floating_parts: Math.max(0, topology.connected_components - 1),
       boundary_edges: topology.boundary_edges,
@@ -266,6 +287,19 @@ export function renderScadToGroup(source, material) {
       supported_subset: "cube/sphere/cylinder + translate/rotate/scale + union/difference/intersection"
     }
   };
+}
+
+function countRenderableNodes(nodes) {
+  let total = 0;
+  let primitives = 0;
+  const stack = [...nodes];
+  while (stack.length) {
+    const node = stack.pop();
+    total += 1;
+    if (["cube", "sphere", "cylinder"].includes(node.name)) primitives += 1;
+    for (const child of node.children || []) stack.push(child);
+  }
+  return { total, primitives };
 }
 
 function analyzeMeshTopology(geometry) {

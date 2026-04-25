@@ -40,6 +40,7 @@ app.innerHTML = `
       </section>
 
       <div id="status" class="status">Ready.</div>
+      <div id="agent-steps" class="agent-steps"></div>
 
       <div class="metrics" id="metrics"></div>
       <pre id="json" class="json"></pre>
@@ -84,6 +85,7 @@ const iterateScadButton = document.querySelector("#iterate-scad");
 const renderScadButton = document.querySelector("#render-scad");
 const loadScadExampleButton = document.querySelector("#load-scad-example");
 const scadOutputEl = document.querySelector("#scad-output");
+const agentStepsEl = document.querySelector("#agent-steps");
 const toolBudgetInput = document.querySelector("#tool-budget");
 const toolBudgetValue = document.querySelector("#tool-budget-value");
 const viewCapturesEl = document.querySelector("#view-captures");
@@ -1134,6 +1136,81 @@ function renderBenchmarkResults(result) {
     .join("");
 }
 
+function markusFeedback(stats = {}, scadCode = "") {
+  const code = scadCode.toLowerCase();
+  const dimensions = stats.dimensions || {};
+  const width = Number(dimensions.x || 0);
+  const depth = Number(dimensions.y || 0);
+  const height = Number(dimensions.z || 0);
+  const components = Number(stats.connected_components || 0);
+  const floating = Number(stats.floating_parts || Math.max(0, components - 1));
+  const boundary = Number(stats.boundary_edges || 0);
+  const nonManifold = Number(stats.non_manifold_edges || 0);
+  const checks = [
+    { name: "compile/render", pass: !stats.compile_error },
+    { name: "single connected body", pass: components === 1 && floating === 0 },
+    { name: "watertight topology", pass: stats.watertight === true && boundary === 0 && nonManifold === 0 },
+    { name: "chair proportions", pass: height > Math.max(width, Math.abs(depth)) * 0.9 && height > 80 },
+    { name: "seat/back structure", pass: code.includes("back") || code.includes("backrest") || height > 120 },
+    { name: "armrests", pass: code.includes("armrest") || code.includes("arm rest") },
+    { name: "central column", pass: code.includes("column") || code.includes("cylinder") },
+    { name: "five-star base", pass: code.includes("spoke") || code.includes("star") || (code.match(/rotate\(/g) || []).length >= 4 },
+    { name: "casters or feet", pass: code.includes("caster") || code.includes("wheel") || code.includes("foot") }
+  ];
+  const passed = checks.filter((check) => check.pass).length;
+  const markus_score = Math.round((passed / checks.length) * 100);
+  const missing = checks.filter((check) => !check.pass).map((check) => check.name);
+  const should_stop = markus_score >= 78 && components === 1 && floating === 0 && !stats.compile_error;
+  return {
+    target: "IKEA Markus-like office chair heuristic, not full GLB distance",
+    markus_score,
+    should_stop,
+    missing,
+    topology: {
+      connected_components: components,
+      floating_parts: floating,
+      boundary_edges: boundary,
+      non_manifold_edges: nonManifold,
+      watertight: stats.watertight === true
+    },
+    dimensions_mm: { width_x: width, depth_y: depth, height_z: height }
+  };
+}
+
+function renderAgentSteps(steps = []) {
+  if (!agentStepsEl) return;
+  if (!steps.length) {
+    agentStepsEl.innerHTML = "";
+    return;
+  }
+  agentStepsEl.innerHTML = `
+    <h3>Agent tool loop</h3>
+    ${steps
+      .map((step) => {
+        const feedback = step.feedback || {};
+        const stats = step.render_stats || {};
+        return `
+          <details class="agent-step" ${step.step === steps.length ? "open" : ""}>
+            <summary>
+              <span>Step ${step.step}</span>
+              <strong>${feedback.markus_score ?? "?"}/100</strong>
+            </summary>
+            <p>${escapeHtml(step.rationale || step.error || "")}</p>
+            <dl>
+              <div><dt>tool</dt><dd>${escapeHtml(step.tool || "")}</dd></div>
+              <div><dt>model</dt><dd>${escapeHtml(step.model || "")}</dd></div>
+              <div><dt>components</dt><dd>${escapeHtml(String(stats.connected_components ?? "n/a"))}</dd></div>
+              <div><dt>floating</dt><dd>${escapeHtml(String(stats.floating_parts ?? "n/a"))}</dd></div>
+              <div><dt>watertight</dt><dd>${escapeHtml(String(stats.watertight ?? "n/a"))}</dd></div>
+            </dl>
+            ${feedback.missing?.length ? `<small>Missing: ${escapeHtml(feedback.missing.join(", "))}</small>` : "<small>Verifier says the current candidate is close enough for this scoped loop.</small>"}
+          </details>
+        `;
+      })
+      .join("")}
+  `;
+}
+
 function renderTrace(trace) {
   if (!trace?.length) {
     traceEl.innerHTML = "";
@@ -1494,32 +1571,86 @@ async function runToolEpisode() {
   }
 }
 
+async function callScadAgentTool(endpoint, payload) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.error || "SCAD generation failed.");
+  }
+  return result;
+}
+
 async function generateScad(iterate = false) {
   const button = iterate ? iterateScadButton : generateScadButton;
-  const endpoint = iterate ? "/api/scad-iterate" : "/api/scad-generate";
-  setStatus(iterate ? "Asking model to revise the SCAD code..." : "Asking model to generate SCAD code...", "working");
+  const maxSteps = iterate ? 1 : 5;
+  const agentSteps = [];
+  setStatus(iterate ? "Asking model to revise the SCAD code..." : "Running multi-step SCAD agent against the Markus chair target...", "working");
   if (button) button.disabled = true;
+  renderAgentSteps(agentSteps);
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    for (let step = 1; step <= maxSteps; step += 1) {
+      const isInitial = step === 1 && !iterate;
+      const endpoint = isInitial ? "/api/scad-generate" : "/api/scad-iterate";
+      const tool = isInitial ? "generate_scad_candidate" : "iterate_scad_with_render_feedback";
+      setStatus(`Tool ${step}/${maxSteps}: ${tool}`, "working");
+      const result = await callScadAgentTool(endpoint, {
         prompt: promptInput.value,
         scad_code: scadCodeInput.value,
         render_stats: latestScadStats
-      })
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      setStatus(result.error || "SCAD generation failed.", "error");
-      return;
+      });
+      scadCodeInput.value = result.scad_code || "";
+      scadOutputEl.textContent = result.rationale || "Generated SCAD code.";
+
+      let feedback;
+      try {
+        renderScadFromEditor();
+        feedback = markusFeedback(latestScadStats, scadCodeInput.value);
+      } catch (renderError) {
+        latestScadStats = {
+          compile_error: renderError instanceof Error ? renderError.message : "SCAD render failed.",
+          connected_components: 0,
+          floating_parts: 999,
+          boundary_edges: 999,
+          non_manifold_edges: 999,
+          watertight: false
+        };
+        feedback = markusFeedback(latestScadStats, scadCodeInput.value);
+        setStatus(latestScadStats.compile_error, "error");
+      }
+
+      agentSteps.push({
+        step,
+        tool,
+        source: result.source,
+        model: result.model,
+        rationale: result.rationale,
+        render_stats: latestScadStats,
+        feedback
+      });
+      renderAgentSteps(agentSteps);
+      jsonEl.textContent = JSON.stringify({ latest_result: result, agent_steps: agentSteps }, null, 2);
+
+      if (feedback.should_stop) {
+        setStatus(`Stopped after ${step} tool calls: Markus heuristic ${feedback.markus_score}/100 with connected topology.`, "ok");
+        return;
+      }
     }
-    scadCodeInput.value = result.scad_code || "";
-    scadOutputEl.textContent = result.rationale || "Generated SCAD code.";
-    renderScadFromEditor();
-    jsonEl.textContent = JSON.stringify(result, null, 2);
+    const finalFeedback = agentSteps[agentSteps.length - 1]?.feedback;
+    setStatus(`Completed ${agentSteps.length} tool calls. Markus heuristic ${finalFeedback?.markus_score ?? "?"}/100.`, "ok");
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "SCAD generation failed.", "error");
+    agentSteps.push({
+      step: agentSteps.length + 1,
+      tool: "agent_error",
+      error: error instanceof Error ? error.message : "SCAD generation failed.",
+      render_stats: latestScadStats || {},
+      feedback: markusFeedback(latestScadStats || {}, scadCodeInput.value)
+    });
+    renderAgentSteps(agentSteps);
   } finally {
     if (button) button.disabled = false;
   }

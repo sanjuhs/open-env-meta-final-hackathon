@@ -10,6 +10,12 @@ PID_DIR="${RUN_DIR}/pids"
 LOG_DIR="${RUN_DIR}/logs"
 
 load_env() {
+  local requested_port="${PORT:-}"
+  local requested_vite_port="${VITE_PORT:-}"
+  local requested_python_sim_bin="${PYTHON_SIM_BIN:-}"
+  local requested_uv_cache_dir="${UV_CACHE_DIR:-}"
+  local requested_xdg_cache_home="${XDG_CACHE_HOME:-}"
+
   set -a
   if [[ -f "${ROOT_DIR}/.env" ]]; then
     # shellcheck disable=SC1091
@@ -21,11 +27,11 @@ load_env() {
   fi
   set +a
 
-  export PORT="${PORT:-8791}"
-  export VITE_PORT="${VITE_PORT:-5177}"
-  export PYTHON_SIM_BIN="${PYTHON_SIM_BIN:-${ROOT_DIR}/.venv/bin/python}"
-  export UV_CACHE_DIR="${UV_CACHE_DIR:-${ROOT_DIR}/.uv-cache}"
-  export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${APP_DIR}/.cache}"
+  export PORT="${requested_port:-${PORT:-8791}}"
+  export VITE_PORT="${requested_vite_port:-${VITE_PORT:-5177}}"
+  export PYTHON_SIM_BIN="${requested_python_sim_bin:-${PYTHON_SIM_BIN:-${ROOT_DIR}/.venv/bin/python}}"
+  export UV_CACHE_DIR="${requested_uv_cache_dir:-${UV_CACHE_DIR:-${ROOT_DIR}/.uv-cache}}"
+  export XDG_CACHE_HOME="${requested_xdg_cache_home:-${XDG_CACHE_HOME:-${APP_DIR}/.cache}}"
   export PATH="${ROOT_DIR}/.venv/bin:${PATH}"
 }
 

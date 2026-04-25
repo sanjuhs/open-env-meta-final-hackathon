@@ -278,6 +278,84 @@ button.tab-button.active {
   color: #245979;
 }
 
+.agent-steps {
+  display: grid;
+  gap: 8px;
+}
+
+.agent-steps:empty {
+  display: none;
+}
+
+.agent-steps h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.agent-step {
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  background: #fbfcfd;
+  overflow: hidden;
+}
+
+.agent-step summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  padding: 9px 10px;
+  font-weight: 800;
+}
+
+.agent-step p {
+  margin: 0;
+  padding: 0 10px 8px;
+  color: #526170;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.agent-step dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0 10px 10px;
+}
+
+.agent-step dl div {
+  min-width: 0;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+  padding: 6px;
+  background: #ffffff;
+}
+
+.agent-step dt,
+.agent-step small {
+  color: #637383;
+  font-size: 11px;
+}
+
+.agent-step dt {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.agent-step dd {
+  margin: 3px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.agent-step small {
+  display: block;
+  padding: 0 10px 10px;
+  line-height: 1.35;
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
