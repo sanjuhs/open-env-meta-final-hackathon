@@ -2589,6 +2589,42 @@ app.get("/api/cadquery/sample-code", (req, res) => {
   }
 });
 
+app.post("/api/cadquery/health", async (req, res) => {
+  loadEnv();
+  const code = [
+    "import cadquery as cq",
+    "",
+    "base = cq.Workplane(\"XY\").box(40, 30, 12)",
+    "boss = cq.Workplane(\"XY\").circle(8).extrude(18).translate((0, 0, 6))",
+    "fixture = base.union(boss).clean()"
+  ].join("\n");
+  const scriptPath = path.join(appRoot, "python_tools", "cadquery_code_runner.py");
+  const outDir = path.join(appRoot, "runs", "cadquery-health");
+  const pythonPath = path.join(appRoot, "python_tools");
+  const startedAt = Date.now();
+  const result = spawnSync(pythonBin, [scriptPath, "--out-dir", outDir, "--name", "cadquery_health"], {
+    cwd: appRoot,
+    input: JSON.stringify({ code, features: ["CadQuery import", "boolean union", "STL export"] }),
+    encoding: "utf8",
+    timeout: 120000,
+    env: {
+      ...process.env,
+      PYTHONPATH: pythonPath,
+      XDG_CACHE_HOME: process.env.XDG_CACHE_HOME || path.join(appRoot, ".cache")
+    }
+  });
+
+  const response = cadqueryResultToResponse({ result, startedAt, source: "cadquery_backend_health" });
+  if (response.status === 200) {
+    response.body = {
+      ...response.body,
+      code,
+      stl_bytes: Buffer.from(response.body.stl_base64, "base64").length
+    };
+  }
+  res.status(response.status).json(response.body);
+});
+
 app.post("/api/cadquery/generate", async (req, res) => {
   loadEnv();
   const prompt = String(req.body?.prompt || "").trim();

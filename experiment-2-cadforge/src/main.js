@@ -8,7 +8,9 @@ import { renderScadToGroup } from "./scadRenderer.js";
 const app = document.querySelector("#app");
 const route = window.location.pathname;
 const isLandingPage = route === "/" || route === "/index.html";
-const isCadQueryPage = route === "/cadquery";
+const isCadQueryGeneratorPage = route === "/cadquery";
+const isCadQueryRendererPage = route === "/cadquery-renderer";
+const isCadQueryPage = isCadQueryGeneratorPage || isCadQueryRendererPage;
 const isOpenScadPage = route === "/openscad" || (!isLandingPage && !isCadQueryPage);
 
 app.innerHTML = `
@@ -28,6 +30,11 @@ app.innerHTML = `
           <strong>Python CAD generator</strong>
           <small>GPT-5.4 writes CadQuery, the backend exports STL, and the viewer inspects the generated mesh.</small>
         </a>
+        <a class="route-card" href="/cadquery-renderer">
+          <span>CadQuery</span>
+          <strong>Renderer test bench</strong>
+          <small>Run known-good CadQuery code through the backend to verify Python, CadQuery, STL export, and frontend rendering.</small>
+        </a>
       </div>
     </section>
   </main>
@@ -37,12 +44,13 @@ app.innerHTML = `
       <nav class="subnav">
         <a href="/">Home</a>
         <a class="${isOpenScadPage ? "active" : ""}" href="/openscad">OpenSCAD</a>
-        <a class="${isCadQueryPage ? "active" : ""}" href="/cadquery">CadQuery</a>
+        <a class="${isCadQueryGeneratorPage ? "active" : ""}" href="/cadquery">CadQuery</a>
+        <a class="${isCadQueryRendererPage ? "active" : ""}" href="/cadquery-renderer">Renderer</a>
       </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
-        <h1>${isCadQueryPage ? "CadQuery renderer" : "Markus chair CAD generator"}</h1>
-        <p class="intro">${isCadQueryPage ? "Generate or edit real CadQuery scripts in the backend, export STL, and inspect the generated mechanical mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
+        <h1>${isCadQueryRendererPage ? "CadQuery renderer test bench" : isCadQueryGeneratorPage ? "CadQuery generator" : "Markus chair CAD generator"}</h1>
+        <p class="intro">${isCadQueryRendererPage ? "Verify the real Python CadQuery backend, STL export path, and frontend mesh viewer with known-good code before testing generated CAD." : isCadQueryGeneratorPage ? "Generate or edit real CadQuery scripts in the backend, export STL, and inspect the generated mechanical mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
       </div>
 
       <label class="${isCadQueryPage ? "hidden" : ""}" for="prompt">Design prompt</label>
@@ -69,7 +77,7 @@ app.innerHTML = `
         <div id="scad-output" class="scad-output">Supported now: cube, sphere, cylinder, translate, rotate, scale, union, difference, and intersection.</div>
       </section>
 
-      <section class="scad-lab ${isCadQueryPage ? "" : "hidden"}">
+      <section class="scad-lab ${isCadQueryGeneratorPage ? "" : "hidden"}">
         <div class="scad-lab-head">
           <label for="cadquery-prompt">CadQuery prompt</label>
           <span>GPT-5.4 -> Python CadQuery -> STL</span>
@@ -86,6 +94,7 @@ app.innerHTML = `
         <textarea id="cadquery-code" spellcheck="false">Loading sample CadQuery code...</textarea>
         <div class="button-row">
           <button id="render-cadquery" class="primary">Render</button>
+          <button id="test-cadquery-backend" class="${isCadQueryRendererPage ? "" : "hidden"}">Test Backend</button>
           <button id="load-cadquery-sample">Load Sample</button>
         </div>
         <div id="cadquery-output" class="scad-output">Backend will run the real CadQuery sample and return an STL mesh.</div>
@@ -141,6 +150,7 @@ const cadqueryPromptInput = document.querySelector("#cadquery-prompt");
 const cadqueryCodeInput = document.querySelector("#cadquery-code");
 const generateCadqueryButton = document.querySelector("#generate-cadquery");
 const renderCadqueryButton = document.querySelector("#render-cadquery");
+const testCadqueryBackendButton = document.querySelector("#test-cadquery-backend");
 const loadCadquerySampleButton = document.querySelector("#load-cadquery-sample");
 const cadqueryOutputEl = document.querySelector("#cadquery-output");
 const agentStepsEl = document.querySelector("#agent-steps");
@@ -357,6 +367,32 @@ async function renderCadquerySample() {
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "CadQuery render failed.", "error");
   } finally {
+    if (renderCadqueryButton) renderCadqueryButton.disabled = false;
+  }
+}
+
+async function testCadqueryBackend() {
+  setStatus("Testing CadQuery backend with a known-good cube...", "working");
+  if (testCadqueryBackendButton) testCadqueryBackendButton.disabled = true;
+  if (renderCadqueryButton) renderCadqueryButton.disabled = true;
+  try {
+    const response = await fetch("/api/cadquery/health", { method: "POST" });
+    const result = await response.json();
+    if (!response.ok) {
+      setStatus(result.error || "CadQuery backend test failed.", "error");
+      cadqueryOutputEl.textContent = result.stderr || result.error || "CadQuery backend test failed.";
+      jsonEl.textContent = JSON.stringify(result, null, 2);
+      return false;
+    }
+    cadqueryCodeInput.value = result.code || cadqueryCodeInput.value;
+    renderCadqueryStl(result);
+    cadqueryOutputEl.textContent = `Backend OK: Python imported CadQuery, generated STL, and returned ${result.stl_bytes} bytes.`;
+    return true;
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "CadQuery backend test failed.", "error");
+    return false;
+  } finally {
+    if (testCadqueryBackendButton) testCadqueryBackendButton.disabled = false;
     if (renderCadqueryButton) renderCadqueryButton.disabled = false;
   }
 }
@@ -1888,6 +1924,7 @@ if (captureViewsButton) captureViewsButton.addEventListener("click", () => captu
 if (generateScadButton) generateScadButton.addEventListener("click", () => generateScad(false));
 if (generateCadqueryButton) generateCadqueryButton.addEventListener("click", generateCadqueryCode);
 if (renderCadqueryButton) renderCadqueryButton.addEventListener("click", renderCadqueryCode);
+if (testCadqueryBackendButton) testCadqueryBackendButton.addEventListener("click", testCadqueryBackend);
 if (loadCadquerySampleButton) loadCadquerySampleButton.addEventListener("click", () => loadCadquerySampleCode({ render: false }));
 if (iterateScadButton) iterateScadButton.addEventListener("click", () => generateScad(true));
 if (renderScadButton) renderScadButton.addEventListener("click", () => {
@@ -1939,7 +1976,9 @@ if (isOpenScadPage) {
   }
 }
 
-if (isCadQueryPage) {
+if (isCadQueryRendererPage) {
+  testCadqueryBackend();
+} else if (isCadQueryGeneratorPage) {
   loadCadquerySampleCode({ render: true });
 }
 
