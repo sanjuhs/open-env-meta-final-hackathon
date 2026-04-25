@@ -25,8 +25,8 @@ app.innerHTML = `
         </a>
         <a class="route-card" href="/cadquery">
           <span>CadQuery</span>
-          <strong>Heavy-duty J hook</strong>
-          <small>Backend runs real CadQuery in Python, exports STL, and renders the mesh here.</small>
+          <strong>Python CAD generator</strong>
+          <small>GPT-5.4 writes CadQuery, the backend exports STL, and the viewer inspects the generated mesh.</small>
         </a>
       </div>
     </section>
@@ -41,8 +41,8 @@ app.innerHTML = `
       </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
-        <h1>${isCadQueryPage ? "CadQuery hook renderer" : "Markus chair CAD generator"}</h1>
-        <p class="intro">${isCadQueryPage ? "Run a real CadQuery script in the backend, export STL, and inspect the generated mechanical hook mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
+        <h1>${isCadQueryPage ? "CadQuery renderer" : "Markus chair CAD generator"}</h1>
+        <p class="intro">${isCadQueryPage ? "Generate or edit real CadQuery scripts in the backend, export STL, and inspect the generated mechanical mesh." : "Generate editable SCAD code, render it as real CSG geometry, and inspect topology before comparing against the Markus chair reference."}</p>
       </div>
 
       <label class="${isCadQueryPage ? "hidden" : ""}" for="prompt">Design prompt</label>
