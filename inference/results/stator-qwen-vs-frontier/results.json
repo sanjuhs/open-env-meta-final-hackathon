@@ -1,0 +1,378 @@
+[
+  {
+    "episode_id": "inference-stator-qwen-vs-frontier",
+    "step_id": "base-qwen",
+    "ok": false,
+    "artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/base-qwen",
+    "error": "CadQuery execution failed.",
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 167, in <module>\n    main()\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 139, in main\n    obj = exportable_object(namespace, captured)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 72, in exportable_object\n    raise ValueError(\"CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj).\")\nValueError: CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj).\n",
+    "elapsed_ms": 1507,
+    "reward": {
+      "total": -1.0,
+      "build": 0.0,
+      "topology": 0.0,
+      "semantic_parts": 0.0,
+      "reference_similarity": 0.0,
+      "silhouette": 0.0,
+      "editability": 0.0,
+      "efficiency": 0.0
+    },
+    "notes": [
+      "CadQuery code did not execute or did not export an STL.",
+      "Build error: ValueError: CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj)."
+    ],
+    "candidate": {
+      "key": "base-qwen",
+      "label": "Base Qwen",
+      "source": "saved local Ollama base-Qwen output",
+      "code": ""
+    },
+    "local_artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/inference/results/stator-qwen-vs-frontier/base-qwen"
+  },
+  {
+    "episode_id": "inference-stator-qwen-vs-frontier",
+    "step_id": "rl-tuned-qwen",
+    "ok": true,
+    "reward_mode": "full",
+    "artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen",
+    "candidate_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/candidate.stl",
+    "candidate_normalized_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/candidate_normalized.stl",
+    "renders": {
+      "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/front.png",
+      "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/back.png",
+      "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/left.png",
+      "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/right.png",
+      "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/top.png",
+      "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/renders/isometric.png"
+    },
+    "masks": {
+      "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/front.png",
+      "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/back.png",
+      "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/left.png",
+      "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/right.png",
+      "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/top.png",
+      "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/rl-tuned-qwen/masks/isometric.png"
+    },
+    "elapsed_ms": 1986,
+    "bbox": {
+      "xmin": -60.0,
+      "xmax": 60.0,
+      "ymin": -59.98134994506836,
+      "ymax": 59.98134994506836,
+      "zmin": 0.0,
+      "zmax": 8.0,
+      "xlen": 120.0,
+      "ylen": 119.96269989013672,
+      "zlen": 8.0
+    },
+    "normalized_bbox": {
+      "xmin": -7500.0,
+      "xmax": 7500.0,
+      "ymin": -7497.668743133545,
+      "ymax": 7497.668743133545,
+      "zmin": 0.0,
+      "zmax": 1000.0,
+      "xlen": 15000.0,
+      "ylen": 14995.33748626709,
+      "zlen": 1000.0
+    },
+    "topology": {
+      "vertices": 600,
+      "faces": 1248,
+      "components": 1,
+      "floating_components": 0,
+      "watertight": true,
+      "winding_consistent": true,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "degenerate_faces": 0
+    },
+    "contact": {
+      "score": 1.0,
+      "components_checked": 1,
+      "mean_gap_ratio": 0.0,
+      "max_gap_ratio": 0.0,
+      "large_gap_components": 0
+    },
+    "semantic_parts": {
+      "score": 0.30011656284332267,
+      "code_hits": {
+        "stator": true,
+        "twelve_slot": false,
+        "radial_tooth": true,
+        "center_bore": false,
+        "shaft_opening": false,
+        "steel": true,
+        "ring": true
+      },
+      "code_score": 0.5714285714285714,
+      "geometry_score": 0.0002590285407171322,
+      "function_count": 3,
+      "assembly_score": 0.5
+    },
+    "editability": {
+      "score": 0.825,
+      "function_count": 3,
+      "named_numeric_assignments": 11,
+      "return_count": 3,
+      "has_final_object": true
+    },
+    "reference_comparison": {
+      "glb_reference": {
+        "bbox": 0.0,
+        "chamfer": 1.1752170368989133e-17,
+        "silhouette": {
+          "score": 0.16441942711996388,
+          "per_view": {
+            "front": 0.02935333377977187,
+            "back": 0.02932381164918545,
+            "left": 0.046377043496813077,
+            "right": 0.04647137150466045,
+            "top": 0.6710054793887129,
+            "isometric": 0.22481743913508825
+          }
+        }
+      },
+      "ideal_cadquery": {
+        "bbox": 0.0,
+        "chamfer": 6.840987847899191e-18,
+        "silhouette": {
+          "score": 0.16817808041161794,
+          "per_view": {
+            "front": 0.0302832470287995,
+            "back": 0.03030033106192194,
+            "left": 0.09340894500320993,
+            "right": 0.09349028000713394,
+            "top": 0.5387013852525349,
+            "isometric": 0.2501550089089331
+          }
+        }
+      }
+    },
+    "reference_similarity": {
+      "score": 0.06666984763798253,
+      "ideal_score": 0.06727123216464719,
+      "glb_score": 0.06576777084798556
+    },
+    "silhouette": {
+      "score": 0.16667461909495632,
+      "ideal": {
+        "score": 0.16817808041161794,
+        "per_view": {
+          "front": 0.0302832470287995,
+          "back": 0.03030033106192194,
+          "left": 0.09340894500320993,
+          "right": 0.09349028000713394,
+          "top": 0.5387013852525349,
+          "isometric": 0.2501550089089331
+        }
+      },
+      "glb": {
+        "score": 0.16441942711996388,
+        "per_view": {
+          "front": 0.02935333377977187,
+          "back": 0.02932381164918545,
+          "left": 0.046377043496813077,
+          "right": 0.04647137150466045,
+          "top": 0.6710054793887129,
+          "isometric": 0.22481743913508825
+        }
+      }
+    },
+    "reward": {
+      "total": 0.6541854234816914,
+      "build": 1.0,
+      "topology": 1.0,
+      "contact": 1.0,
+      "semantic_parts": 0.30011656284332267,
+      "reference_similarity": 0.06666984763798253,
+      "silhouette": 0.16667461909495632,
+      "editability": 0.825,
+      "efficiency": 1.0
+    },
+    "notes": [
+      "Candidate is weak on axial_motor_stator_12_slot semantic hints; add/organize recognizable subassemblies in code.",
+      "Candidate is still far from the ideal CadQuery/reference GLB shape."
+    ],
+    "candidate": {
+      "key": "rl-tuned-qwen",
+      "label": "RL-tuned Qwen",
+      "source": "strict build-gated GRPO held-out stator artifact",
+      "code": "import cadquery as cq\n\n# 12-slot axial motor stator concept\n# Compact steel stator ring with visible radial teeth and center shaft opening.\n\n# ----------------------------\n# Named dimensions\n# ----------------------------\nslot_count = 12\n\nouter_diameter = 120.0\ninner_diameter = 44.0\nshaft_hole_diameter = 22.0\n\nstator_thickness = 8.0\n\ntooth_radial_length = 18.0\ntooth_arc_width = 12.0\ntooth_root_inner_radius = 28.0\n\nback_iron_outer_radius = outer_diameter / 2.0\nback_iron_inner_radius = inner_diameter / 2.0\n\ntooth_tip_radius = back_iron_outer_radius - 2.0\ntooth_base_radius = tooth_root_inner_radius\n\n# Derived\ntooth_center_radius = (tooth_base_radius + tooth_tip_radius) / 2.0\ntooth_half_width = tooth_arc_width / 2.0\n\n# ----------------------------\n# Helper builders\n# ----------------------------\ndef make_back_iron_ring():\n    outer = cq.Workplane(\"XY\").circle(back_iron_outer_radius).extrude(stator_thickness)\n    inner = cq.Workplane(\"XY\").circle(back_iron_inner_radius).extrude(stator_thickness)\n    return outer.cut(inner)\n\n\ndef make_radial_tooth(angle_deg):\n    # Tooth extends radially inward from the outer ring toward the center opening.\n    tooth = (\n        cq.Workplane(\"XY\")\n        .center(tooth_center_radius, 0)\n        .rect(tooth_radial_length, tooth_arc_width)\n        .extrude(stator_thickness)\n        .rotate((0, 0, 0), (0, 0, 1), angle_deg)\n    )\n    return tooth\n\n\ndef make_slot_window():\n    # Axial slots cut through the stator thickness, leaving the teeth and ring visible.\n    slot_radius = inner_diameter / 2.0 + tooth_radial_length * 0.55\n    slot_width = 5.0\n    slots = None\n    for i in range(slot_count):\n        angle = 360.0 * i / slot_count\n        slot = (\n            cq.Workplane(\"XY\")\n            .center(slot_radius, 0)\n            .rect(slot_width, stator_thickness + 2.0)\n            .extrude(stator_thickness)\n            .rotate((0, 0, 0), (0, 0, 1), angle)\n        )\n        slots = slot if slots is None else slots.union(slot)\n    return slots\n\n\n# ----------------------------\n# Build stator\n# ----------------------------\nback_iron = make_back_iron_ring()\n\nteeth = None\nfor i in range(slot_count):\n    angle = 360.0 * i / slot_count\n    tooth = make_radial_tooth(angle)\n    teeth = tooth if teeth is None else teeth.union(tooth)\n\nstator = back_iron.union(teeth)\n\n# Cut axial slots between teeth\nstator = stator.cut(make_slot_window())\n\n# Center shaft opening\nshaft_hole = (\n    cq.Workplane(\"XY\")\n    .circle(shaft_hole_diameter / 2.0)\n    .extrude(stator_thickness + 2.0)\n)\n\nfixture = stator.cut(shaft_hole).clean()"
+    },
+    "local_artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/inference/results/stator-qwen-vs-frontier/rl-tuned-qwen"
+  },
+  {
+    "episode_id": "inference-stator-qwen-vs-frontier",
+    "step_id": "gpt-5-4",
+    "ok": true,
+    "reward_mode": "full",
+    "artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4",
+    "candidate_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/candidate.stl",
+    "candidate_normalized_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/candidate_normalized.stl",
+    "renders": {
+      "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/front.png",
+      "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/back.png",
+      "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/left.png",
+      "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/right.png",
+      "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/top.png",
+      "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/isometric.png"
+    },
+    "masks": {
+      "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/front.png",
+      "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/back.png",
+      "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/left.png",
+      "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/right.png",
+      "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/top.png",
+      "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/isometric.png"
+    },
+    "elapsed_ms": 1773,
+    "bbox": {
+      "xmin": -70.0,
+      "xmax": 70.0,
+      "ymin": -69.97824096679688,
+      "ymax": 69.97824096679688,
+      "zmin": 0.0,
+      "zmax": 17.0,
+      "xlen": 140.0,
+      "ylen": 139.95648193359375,
+      "zlen": 17.0
+    },
+    "normalized_bbox": {
+      "xmin": -4117.647058823529,
+      "xmax": 4117.647058823529,
+      "ymin": -4116.367115693934,
+      "ymax": 4116.367115693934,
+      "zmin": 0.0,
+      "zmax": 1000.0,
+      "xlen": 8235.294117647058,
+      "ylen": 8232.734231387867,
+      "zlen": 1000.0
+    },
+    "topology": {
+      "vertices": 1110,
+      "faces": 2268,
+      "components": 1,
+      "floating_components": 0,
+      "watertight": true,
+      "winding_consistent": true,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0,
+      "degenerate_faces": 0
+    },
+    "contact": {
+      "score": 1.0,
+      "components_checked": 1,
+      "mean_gap_ratio": 0.0,
+      "max_gap_ratio": 0.0,
+      "large_gap_components": 0
+    },
+    "semantic_parts": {
+      "score": 0.6382992912741269,
+      "code_hits": {
+        "stator": true,
+        "twelve_slot": false,
+        "radial_tooth": false,
+        "center_bore": false,
+        "shaft_opening": true,
+        "steel": true,
+        "ring": true
+      },
+      "code_score": 0.5714285714285714,
+      "geometry_score": 0.751776202831393,
+      "function_count": 3,
+      "assembly_score": 0.5
+    },
+    "editability": {
+      "score": 0.825,
+      "function_count": 3,
+      "named_numeric_assignments": 12,
+      "return_count": 3,
+      "has_final_object": true
+    },
+    "reference_comparison": {
+      "glb_reference": {
+        "bbox": 0.0,
+        "chamfer": 4.015911868338221e-08,
+        "silhouette": {
+          "score": 0.20165203764951817,
+          "per_view": {
+            "front": 0.05223007105014579,
+            "back": 0.05267319818432025,
+            "left": 0.07802391687904332,
+            "right": 0.0762146782215851,
+            "top": 0.7379801856583008,
+            "isometric": 0.2742483398404912
+          }
+        }
+      },
+      "ideal_cadquery": {
+        "bbox": 0.0,
+        "chamfer": 2.371370456445454e-08,
+        "silhouette": {
+          "score": 0.1898424841929839,
+          "per_view": {
+            "front": 0.032720816918930126,
+            "back": 0.03273693763775444,
+            "left": 0.08207040651696686,
+            "right": 0.08212982066338677,
+            "top": 0.6348964290252891,
+            "isometric": 0.30791381837520915
+          }
+        }
+      }
+    },
+    "reference_similarity": {
+      "score": 0.07782653283239363,
+      "ideal_score": 0.07593700197699017,
+      "glb_score": 0.08066082911549881
+    },
+    "silhouette": {
+      "score": 0.19456630557559762,
+      "ideal": {
+        "score": 0.1898424841929839,
+        "per_view": {
+          "front": 0.032720816918930126,
+          "back": 0.03273693763775444,
+          "left": 0.08207040651696686,
+          "right": 0.08212982066338677,
+          "top": 0.6348964290252891,
+          "isometric": 0.30791381837520915
+        }
+      },
+      "glb": {
+        "score": 0.20165203764951817,
+        "per_view": {
+          "front": 0.05223007105014579,
+          "back": 0.05267319818432025,
+          "left": 0.07802391687904332,
+          "right": 0.0762146782215851,
+          "top": 0.7379801856583008,
+          "isometric": 0.2742483398404912
+        }
+      }
+    },
+    "reward": {
+      "total": 0.7093755041735379,
+      "build": 1.0,
+      "topology": 1.0,
+      "contact": 1.0,
+      "semantic_parts": 0.6382992912741269,
+      "reference_similarity": 0.07782653283239363,
+      "silhouette": 0.19456630557559762,
+      "editability": 0.825,
+      "efficiency": 1.0
+    },
+    "notes": [
+      "Candidate is still far from the ideal CadQuery/reference GLB shape."
+    ],
+    "candidate": {
+      "key": "gpt-5-4",
+      "label": "GPT-5.4",
+      "source": "saved GPT-5.4 artifact `/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/openai-gpt-5.4-axial_motor_stator_12_slot-disconnected-2026-04-25T14-06-43-357Z/step-2/candidate.py`",
+      "code": "import cadquery as cq\nimport math\n\n# 12-slot axial motor stator concept\n# Revised strategy:\n# - Use a single compact annular steel plate as the main body.\n# - Form 12 visible radial teeth by cutting open slots from the inner bore region outward.\n# - Keep all material connected for strong topology/contact and a clearer stator silhouette.\n# - Use named dimensions and helper functions for clean editability.\n\n# ----------------------------\n# Named dimensions\n# ----------------------------\nslot_count = 12\n\nouter_diameter = 140.0\nouter_radius = outer_diameter / 2.0\n\nshaft_opening_diameter = 34.0\nshaft_opening_radius = shaft_opening_diameter / 2.0\n\nstator_thickness = 14.0\n\n# Ring / tooth geometry\ntooth_tip_radius = 28.0          # where teeth point toward the center\nslot_outer_radius = 58.0         # how far slots extend outward\nslot_width = 12.0                # tangential width of each slot\nweb_outer_margin = outer_radius - slot_outer_radius\n\n# Small front face ring to emphasize axial stator appearance\nface_ring_outer_diameter = 104.0\nface_ring_inner_diameter = 52.0\nface_ring_thickness = 3.0\n\n# ----------------------------\n# Helpers\n# ----------------------------\ndef annular_plate(outer_r, inner_r, thickness):\n    return (\n        cq.Workplane(\"XY\")\n        .circle(outer_r)\n        .circle(inner_r)\n        .extrude(thickness)\n    )\n\ndef radial_slot(angle_deg, inner_r, outer_r, width, thickness):\n    radial_length = outer_r - inner_r\n    mid_r = inner_r + radial_length / 2.0\n    return (\n        cq.Workplane(\"XY\")\n        .center(mid_r, 0)\n        .rect(radial_length, width)\n        .extrude(thickness)\n        .rotate((0, 0, 0), (0, 0, 1), angle_deg)\n    )\n\ndef make_slot_pattern(count, base_angle_offset_deg, inner_r, outer_r, width, thickness):\n    slots = None\n    angle_step = 360.0 / count\n    for i in range(count):\n        angle = base_angle_offset_deg + i * angle_step\n        slot = radial_slot(angle, inner_r, outer_r, width, thickness)\n        slots = slot if slots is None else slots.union(slot)\n    return slots\n\n# ----------------------------\n# Base steel stator body\n# ----------------------------\nstator_body = annular_plate(outer_radius, shaft_opening_radius, stator_thickness)\n\n# Slots are centered between teeth so the remaining material reads as 12 radial teeth.\nangle_step = 360.0 / slot_count\nslot_phase = angle_step / 2.0\n\nslots = make_slot_pattern(\n    count=slot_count,\n    base_angle_offset_deg=slot_phase,\n    inner_r=tooth_tip_radius,\n    outer_r=slot_outer_radius,\n    width=slot_width,\n    thickness=stator_thickness\n)\n\nstator = stator_body.cut(slots)\n\n# Add a shallow front annular face feature for a more motor-like axial silhouette.\nface_ring = (\n    annular_plate(face_ring_outer_diameter / 2.0, face_ring_inner_diameter / 2.0, face_ring_thickness)\n    .translate((0, 0, stator_thickness))\n)\n\n# Recut shaft opening through the full height to keep a clean center bore.\ntotal_height = stator_thickness + face_ring_thickness\nshaft_bore = cq.Workplane(\"XY\").circle(shaft_opening_radius).extrude(total_height)\n\nfixture = stator.union(face_ring).cut(shaft_bore).clean()"
+    },
+    "local_artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/inference/results/stator-qwen-vs-frontier/gpt-5-4"
+  }
+]

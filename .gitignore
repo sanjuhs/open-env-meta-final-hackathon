@@ -27,6 +27,7 @@ build/
 # Local app/runtime artifacts
 runs/
 **/runs/
+models/
 .run/
 **/.run/
 .cache/
@@ -47,6 +48,7 @@ experiment-2-cadforge/reports/*benchmark*.md
 experiment-2-cadforge/outputs/
 training/output/
 training/outputs/
+training/backups/
 training/logs/
 training/runpod-info-temp.md
 outputs/

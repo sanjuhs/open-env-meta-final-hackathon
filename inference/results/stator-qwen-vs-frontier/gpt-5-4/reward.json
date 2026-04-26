@@ -1,0 +1,165 @@
+{
+  "episode_id": "inference-stator-qwen-vs-frontier",
+  "step_id": "gpt-5-4",
+  "ok": true,
+  "reward_mode": "full",
+  "artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4",
+  "candidate_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/candidate.stl",
+  "candidate_normalized_stl": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/candidate_normalized.stl",
+  "renders": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/renders/isometric.png"
+  },
+  "masks": {
+    "front": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/front.png",
+    "back": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/back.png",
+    "left": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/left.png",
+    "right": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/right.png",
+    "top": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/top.png",
+    "isometric": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/gpt-5-4/masks/isometric.png"
+  },
+  "elapsed_ms": 1773,
+  "bbox": {
+    "xmin": -70.0,
+    "xmax": 70.0,
+    "ymin": -69.97824096679688,
+    "ymax": 69.97824096679688,
+    "zmin": 0.0,
+    "zmax": 17.0,
+    "xlen": 140.0,
+    "ylen": 139.95648193359375,
+    "zlen": 17.0
+  },
+  "normalized_bbox": {
+    "xmin": -4117.647058823529,
+    "xmax": 4117.647058823529,
+    "ymin": -4116.367115693934,
+    "ymax": 4116.367115693934,
+    "zmin": 0.0,
+    "zmax": 1000.0,
+    "xlen": 8235.294117647058,
+    "ylen": 8232.734231387867,
+    "zlen": 1000.0
+  },
+  "topology": {
+    "vertices": 1110,
+    "faces": 2268,
+    "components": 1,
+    "floating_components": 0,
+    "watertight": true,
+    "winding_consistent": true,
+    "boundary_edges": 0,
+    "non_manifold_edges": 0,
+    "degenerate_faces": 0
+  },
+  "contact": {
+    "score": 1.0,
+    "components_checked": 1,
+    "mean_gap_ratio": 0.0,
+    "max_gap_ratio": 0.0,
+    "large_gap_components": 0
+  },
+  "semantic_parts": {
+    "score": 0.6382992912741269,
+    "code_hits": {
+      "stator": true,
+      "twelve_slot": false,
+      "radial_tooth": false,
+      "center_bore": false,
+      "shaft_opening": true,
+      "steel": true,
+      "ring": true
+    },
+    "code_score": 0.5714285714285714,
+    "geometry_score": 0.751776202831393,
+    "function_count": 3,
+    "assembly_score": 0.5
+  },
+  "editability": {
+    "score": 0.825,
+    "function_count": 3,
+    "named_numeric_assignments": 12,
+    "return_count": 3,
+    "has_final_object": true
+  },
+  "reference_comparison": {
+    "glb_reference": {
+      "bbox": 0.0,
+      "chamfer": 4.015911868338221e-08,
+      "silhouette": {
+        "score": 0.20165203764951817,
+        "per_view": {
+          "front": 0.05223007105014579,
+          "back": 0.05267319818432025,
+          "left": 0.07802391687904332,
+          "right": 0.0762146782215851,
+          "top": 0.7379801856583008,
+          "isometric": 0.2742483398404912
+        }
+      }
+    },
+    "ideal_cadquery": {
+      "bbox": 0.0,
+      "chamfer": 2.371370456445454e-08,
+      "silhouette": {
+        "score": 0.1898424841929839,
+        "per_view": {
+          "front": 0.032720816918930126,
+          "back": 0.03273693763775444,
+          "left": 0.08207040651696686,
+          "right": 0.08212982066338677,
+          "top": 0.6348964290252891,
+          "isometric": 0.30791381837520915
+        }
+      }
+    }
+  },
+  "reference_similarity": {
+    "score": 0.07782653283239363,
+    "ideal_score": 0.07593700197699017,
+    "glb_score": 0.08066082911549881
+  },
+  "silhouette": {
+    "score": 0.19456630557559762,
+    "ideal": {
+      "score": 0.1898424841929839,
+      "per_view": {
+        "front": 0.032720816918930126,
+        "back": 0.03273693763775444,
+        "left": 0.08207040651696686,
+        "right": 0.08212982066338677,
+        "top": 0.6348964290252891,
+        "isometric": 0.30791381837520915
+      }
+    },
+    "glb": {
+      "score": 0.20165203764951817,
+      "per_view": {
+        "front": 0.05223007105014579,
+        "back": 0.05267319818432025,
+        "left": 0.07802391687904332,
+        "right": 0.0762146782215851,
+        "top": 0.7379801856583008,
+        "isometric": 0.2742483398404912
+      }
+    }
+  },
+  "reward": {
+    "total": 0.7093755041735379,
+    "build": 1.0,
+    "topology": 1.0,
+    "contact": 1.0,
+    "semantic_parts": 0.6382992912741269,
+    "reference_similarity": 0.07782653283239363,
+    "silhouette": 0.19456630557559762,
+    "editability": 0.825,
+    "efficiency": 1.0
+  },
+  "notes": [
+    "Candidate is still far from the ideal CadQuery/reference GLB shape."
+  ]
+}

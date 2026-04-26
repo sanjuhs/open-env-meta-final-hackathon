@@ -13,9 +13,12 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Judge rerun notebook in this repo: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
 - Self-improving curriculum: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-improving-curriculum.md)
+- Inference comparison: [inference/results/stator-qwen-vs-frontier/report.md](inference/results/stator-qwen-vs-frontier/report.md)
 - Submission checklist: [docs/cadforge-submission-checklist.md](docs/cadforge-submission-checklist.md)
 - Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)
+- Training logs and evidence bundle: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Strict GRPO model: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+- Adaptive repair GRPO model: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
 
 ## Why This Matters
 
@@ -46,11 +49,29 @@ We trained Qwen3.5 2B and 9B adapters with SFT, then ran GRPO against the CADFor
 | Qwen3.5-2B SFT | train loss `1.4480 -> 0.1658`, eval loss `0.4477 -> 0.2676` |
 | Qwen3.5-9B SFT | train loss `2.6020 -> 0.1413`, eval loss `0.3650 -> 0.2398` |
 | Qwen3.5-9B strict GRPO | `320` completions, `96` buildable, best CADForge score `0.9352` |
+| Qwen3.5-9B adaptive repair GRPO | `180` repair completions, `53` buildable, `0` clipped completions |
 | Strict 9B quick eval | `2/3` held-out prompts built successfully |
+| Final stator inference comparison | base Qwen failed build; RL-tuned Qwen built a `0.654` stator; GPT-5.4 built a `0.709` stator |
+
+![Training evidence build-rate summary](docs/detailed-blog/rendered-assets/training-evidence-build-rate-summary.png)
 
 ![Strict GRPO reward curve](training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
 
 ![Strict GRPO code health](training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
+
+![Final adaptive repair chunk metrics](docs/detailed-blog/rendered-assets/adaptive-final-8192-chunk-metrics.png)
+
+![Base Qwen vs RL-tuned Qwen vs GPT-5.4 stator comparison](inference/results/stator-qwen-vs-frontier/comparison.png)
+
+## Training Logs
+
+Judges can inspect the raw training evidence here:
+
+- Hugging Face evidence dataset: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+- Compressed archive on the dataset: `archives/cadforge-training-evidence-20260426.tar.gz`
+- Local working-copy backup, if this repo was prepared from the hackathon machine: `training/backups/cadforge-training-evidence-20260426`
+
+The most useful files are `training/logs/*completions.jsonl` for per-sample rewards and `training/reports/*/*.png` for the judge-facing plots. The logs support the story directly: dense GRPO had positive-looking rewards but `0%` build rate, strict build-gating produced `96/320` buildable CAD completions, and the final adaptive repair run fixed the clipped-output failure with `53/180` buildable repairs.
 
 ## OpenEnv Environment
 
@@ -82,6 +103,8 @@ training/run_strict_9b_grpo.sh
 ```
 
 The final strict build-gated GRPO reward is the key design change: failed builds receive negative reward; successful builds unlock dense topology, semantic, reference, and editability scoring.
+
+The adaptive repair run then starts from the strict build-gated GRPO adapter, not the original SFT checkpoint. It specializes the already build-aware model on mined repair failures.
 
 ## Self-Improvement Loop
 

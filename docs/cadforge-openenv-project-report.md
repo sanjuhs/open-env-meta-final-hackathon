@@ -112,6 +112,15 @@ The strict 9B run completed on an H200 and produced exactly that separation:
 | Run | Completions | Buildable CAD | Build Rate | Best Candidate Reward | Best CADForge Score |
 |---|---:|---:|---:|---:|---:|
 | Qwen3.5-9B strict GRPO | `320` | `96` | `30.0%` | `0.9449` | `0.9352` |
+| Qwen3.5-9B adaptive repair GRPO final | `180` | `53` | `29.4%` | `0.8817` | `0.8608` |
+
+The raw logs and report artifacts are backed up here:
+
+- Training evidence dataset: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+- Compressed archive on that dataset: `archives/cadforge-training-evidence-20260426.tar.gz`
+- Final adaptive repair report: `training/reports/qwen35-9b-grpo-20260426-adaptive-repair-final-8192/`
+
+![Training evidence build-rate summary](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/docs/detailed-blog/rendered-assets/training-evidence-build-rate-summary.png)
 
 The per-step GRPO reward mean stayed lower because failed builds are now intentionally negative. That is good: GRPO now sees the contrast between broken syntax and real executable CAD instead of rewarding both.
 
@@ -244,6 +253,70 @@ After upload, the strict adapter was evaluated on 3 prompts:
 
 Eval summary: **2/3 buildable**, `66.7%` build rate, best reward `0.738`. The failed chair output was clipped before the final union closed, which tells us the next curriculum should target shorter valid finalization and syntax closure.
 
+### Run 5: Adaptive Repair GRPO, Final 8192 Completion Run
+
+The final adaptive repair run closes the self-improvement loop. It starts from the strict build-gated adapter, mines failed strict-GRPO rollouts into repair prompts, and trains the model to rewrite broken CadQuery into complete executable files.
+
+The key comparison is against the earlier adaptive repair attempt. The earlier run had the right idea but the wrong sequence budget: completions clipped before `fixture`, so build rate stayed at `0%`. The final run raised the completion budget to `8192`, kept the prompt compact, and used a foundation-stage repair curriculum.
+
+| Metric | Earlier adaptive repair | Final adaptive repair 8192 |
+|---|---:|---:|
+| repair completions scored | `120` | `180` |
+| buildable repairs | `0` | `53` |
+| build rate | `0.0%` | `29.4%` |
+| fixture rate | `0.8%` | `97.2%` |
+| CadQuery import rate | `96.7%` | `100.0%` |
+| clipped completions | `100%` pattern | `0` |
+| best candidate reward | `-0.740` | `0.8817` |
+| best CADForge total | `-1.000` | `0.8608` |
+
+The failure distribution also changed in the direction we wanted:
+
+| Outcome | Earlier adaptive repair | Final adaptive repair 8192 |
+|---|---:|---:|
+| build_ok | `0` | `53` |
+| SyntaxError | `95` | `12` |
+| NameError | `6` | `37` |
+| TypeError | `4` | `21` |
+| ValueError | `15` | `21` |
+| AttributeError | `0` | `18` |
+
+That is a good trade. Syntax closure stopped dominating the run, buildable repairs appeared, and the remaining failures became more specific CAD/Python repair targets.
+
+![Final adaptive repair reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/reports/20260426-adaptive-repair-final-8192/grpo_reward_curve.png)
+
+![Final adaptive repair code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/reports/20260426-adaptive-repair-final-8192/grpo_code_health.png)
+
+![Final adaptive repair error breakdown](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/reports/20260426-adaptive-repair-final-8192/grpo_error_breakdown.png)
+
+The headline is not that adaptive repair beats strict GRPO on the same benchmark; the tasks are different. The headline is that the environment found a concrete weakness, generated a curriculum for it, and a new run fixed the clipping failure while producing `53` buildable repairs.
+
+---
+
+## Inference Comparison: Base Qwen vs RL-Tuned Qwen vs GPT-5.4
+
+To make the final result concrete, we ran a same-task CadQuery comparison on the medium-difficulty `axial_motor_stator_12_slot` prompt:
+
+> Design a simple 12-slot axial motor stator concept. It should visibly look like a circular stator ring with radial teeth and a center shaft opening. Use steel and keep the structure compact.
+
+The comparison script is [inference/compare_cadquery_models.py](../inference/compare_cadquery_models.py). It can run local Ollama Qwen, score saved trained artifacts, and optionally call a live OpenAI model when `OPENAI_API_KEY` is available.
+
+![Base Qwen vs RL-tuned Qwen vs GPT-5.4](../inference/results/stator-qwen-vs-frontier/comparison.png)
+
+| Model | Source | Total | Build | Semantic | Reference | Editability |
+|---|---|---:|---:|---:|---:|---:|
+| Base Qwen | local Ollama `qwen3.5:9b` output | `-1.000` | `0.0` | `0.000` | `0.000` | `0.000` |
+| RL-tuned Qwen | strict build-gated GRPO held-out stator artifact | `0.654` | `1.0` | `0.300` | `0.067` | `0.825` |
+| GPT-5.4 | saved frontier stator artifact | `0.709` | `1.0` | `0.638` | `0.078` | `0.825` |
+
+This is not a broad leaderboard. It is one part-family comparison. But it is the right kind of final evidence: base Qwen failed to produce exportable CAD, while the RL-tuned Qwen produced a buildable, editable stator in the same task family where GPT-5.4 also succeeds.
+
+The honest claim is:
+
+> CADForge makes a small Qwen model competitive on buildable, editable code-CAD behavior for a medium-difficulty mechanical part. GPT-5.4 is still stronger semantically on this single stator example, but the gap is now about part richness and task detail rather than basic executability.
+
+With longer GRPO, more reference-backed tasks, and adaptive curricula focused on semantic subassemblies, this is the path toward small specialist CAD models that can compete with frontier models in a narrower engineering domain.
+
 ---
 
 ## Model Artifacts
@@ -253,6 +326,36 @@ Eval summary: **2/3 buildable**, `66.7%` build rate, best reward `0.738`. The fa
 - [Qwen3.5-9B CADForge SFT LoRA](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-sft-lora)
 - [Qwen3.5-9B CADForge GRPO LoRA](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-lora)
 - [Qwen3.5-9B CADForge Strict Build-Gated GRPO LoRA](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+- [Qwen3.5-9B CADForge Adaptive Repair GRPO LoRA](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
+
+---
+
+## Final Hackathon Submission Package
+
+The submission should emphasize four concrete artifacts:
+
+| Artifact | What to show | Why it matters |
+|---|---|---|
+| Live demo / Space | prompt, CadQuery code, render, reward JSON, repair feedback | proves CADForge is an environment, not just a report |
+| Detailed report | SFT, dense GRPO, strict GRPO, adaptive repair results | shows the training story and the reward-design lesson |
+| Rendered visual pack | stator, caster, failed chair, reward JSON, charts, code beside render | makes the evidence understandable in one glance |
+| Hugging Face adapters | SFT, dense GRPO, strict GRPO, adaptive repair LoRAs | proves the model artifacts were actually persisted |
+
+The strongest final claim is:
+
+> CADForge turned executable CAD failures into reward and curriculum data. Dense reward alone gave 0% buildability; strict build-gated GRPO reached 30.0% buildable completions; adaptive repair then fixed the clipping failure and produced 53/180 buildable repairs with zero clipped completions.
+
+The adaptive repair run started from the **strict build-gated GRPO adapter**, not the original SFT checkpoint. In `training/run_adaptive_repair_grpo.sh`, `BASE_ADAPTER` points to `outputs/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build`. That matters because adaptive repair is the second stage of RL specialization: first learn buildability, then learn targeted repair.
+
+The report should stay honest about limits:
+
+- it is not production-ready CAD automation yet;
+- STL export is working, but STEP export and stricter topology checks are future work;
+- the strict held-out eval is small at 3 tasks;
+- adaptive repair and strict GRPO use different prompt distributions, so their build rates should not be treated as a direct same-benchmark leaderboard;
+- mechanical load analysis is still the next stage after buildability.
+
+That honesty helps the result, because the system can clearly say what it learned and what the next curriculum should target.
 
 ---
 
@@ -269,6 +372,9 @@ export FAL_AI_API_KEY=...
 
 # Strict build-gated 9B GRPO follow-up
 ./training/run_strict_9b_grpo.sh
+
+# Final adaptive repair GRPO run
+./training/run_adaptive_repair_grpo.sh
 ```
 
 ---
@@ -280,13 +386,14 @@ export FAL_AI_API_KEY=...
 3. Reward logs need parsed components, not only human-readable stdout tails.
 4. Output clipping is a real CAD failure mode. If the model never reaches `fixture = ...`, the geometry cannot build.
 5. CADForge should train on repair loops, not only one-shot prompt-to-code. The real skill is diagnosis and correction.
+6. The adaptive curriculum loop worked: clipping dropped to zero and repair build rate rose from `0.0%` to `29.4%`.
 
 ---
 
 ## Next Steps
 
 - Add AST-level syntax checks before CadQuery execution for faster reward.
-- Add targeted repair curricula for common failures: missing fixture, undefined variable, invalid Workplane API, clipped code.
+- Add the next targeted repair curricula for common remaining failures: undefined names, type/value errors, invalid Workplane API, and CAD-kernel exceptions.
 - Run strict GRPO with more generations per prompt once build-rate starts moving.
 - Add vLLM server mode for higher-throughput Qwen rollouts.
 - Evaluate trained adapters against held-out GLB-backed tasks and Markus chair reference similarity.

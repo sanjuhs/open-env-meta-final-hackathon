@@ -1,0 +1,24 @@
+{
+  "episode_id": "inference-stator-qwen-vs-frontier",
+  "step_id": "base-qwen",
+  "ok": false,
+  "artifacts_dir": "/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/runs/cadquery-env/inference-stator-qwen-vs-frontier/base-qwen",
+  "error": "CadQuery execution failed.",
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 167, in <module>\n    main()\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 139, in main\n    obj = exportable_object(namespace, captured)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/sanju/Desktop/coding/python/open-env-meta-final/experiment-2-cadforge/python_tools/cadquery_code_runner.py\", line 72, in exportable_object\n    raise ValueError(\"CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj).\")\nValueError: CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj).\n",
+  "elapsed_ms": 1507,
+  "reward": {
+    "total": -1.0,
+    "build": 0.0,
+    "topology": 0.0,
+    "semantic_parts": 0.0,
+    "reference_similarity": 0.0,
+    "silhouette": 0.0,
+    "editability": 0.0,
+    "efficiency": 0.0
+  },
+  "notes": [
+    "CadQuery code did not execute or did not export an STL.",
+    "Build error: ValueError: CadQuery code must assign the final object to fixture/result/model/solid/body/part or call show_object(obj)."
+  ]
+}

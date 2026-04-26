@@ -29,8 +29,10 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Self-improving RLVE design: [docs/brainstorm/21-cadforge-self-improving-rlve.md](docs/brainstorm/21-cadforge-self-improving-rlve.md)
 - Strict GRPO training report: [training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md)
 - Strict GRPO eval report: [training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md](training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md)
+- Inference comparison: [inference/results/stator-qwen-vs-frontier/report.md](../inference/results/stator-qwen-vs-frontier/report.md)
 - Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)
 - Strict 9B GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+- Adaptive repair GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
 
 ## Results Snapshot
 
@@ -40,11 +42,15 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 | Qwen3.5-2B dense GRPO | mean reward `0.3387`, best `0.5303`; useful reward signal but too forgiving on broken builds |
 | Qwen3.5-9B SFT | train loss `2.6020 -> 0.1413`, eval loss `0.3650 -> 0.2398` |
 | Qwen3.5-9B strict GRPO | `320` completions, `96` buildable, best CADForge score `0.9352` |
+| Qwen3.5-9B adaptive repair GRPO | `180` repair completions, `53` buildable, `0` clipped completions |
 | Strict 9B quick eval | `2/3` held-out prompts built successfully |
+| Stator inference comparison | base Qwen failed build; RL-tuned Qwen built a `0.654` stator; GPT-5.4 built a `0.709` stator |
 
 ![Strict GRPO reward curve](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
 
 ![Strict GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
+
+![Base Qwen vs RL-tuned Qwen vs GPT-5.4 stator comparison](../inference/results/stator-qwen-vs-frontier/comparison.png)
 
 ## Hackathon Theme Alignment
 

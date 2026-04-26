@@ -104,6 +104,19 @@ The production scripts are:
 
 The real run used Unsloth for LoRA SFT and TRL GRPO for environment reward training on a RunPod H200.
 
+## Training Logs and Evidence
+
+The raw logs are public so the training claims are inspectable, not just summarized:
+
+- Training evidence dataset: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+- Compressed archive on that dataset: `archives/cadforge-training-evidence-20260426.tar.gz`
+- Per-sample reward traces: `training/logs/*completions.jsonl`
+- Generated plots and parsed metrics: `training/reports/*`
+
+The most important thing the logs show is that reward alone was not enough. The dense GRPO runs had positive-looking scalar reward but `0%` buildability. The strict build-gated run changed the environment so broken CAD stayed negative and buildable CAD unlocked dense reward. The final adaptive run then mined failures from strict GRPO and trained directly on repair prompts.
+
+![Training evidence build-rate summary](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/docs/detailed-blog/rendered-assets/training-evidence-build-rate-summary.png)
+
 ## Results
 
 | Run | Result |
@@ -112,6 +125,8 @@ The real run used Unsloth for LoRA SFT and TRL GRPO for environment reward train
 | Qwen3.5-2B dense GRPO | mean reward `0.3387`, best `0.5303`; useful reward signal but too forgiving on broken builds |
 | Qwen3.5-9B SFT | train loss `2.6020 -> 0.1413`, eval loss `0.3650 -> 0.2398` |
 | Qwen3.5-9B strict GRPO | `320` completions, `96` buildable, `30.0%` build rate |
+| Qwen3.5-9B adaptive repair v1 | `120` repair completions, `0` buildable; exposed clipped completions and bad curriculum ordering |
+| Qwen3.5-9B adaptive repair final 8192 | `180` repair completions, `53` buildable, `0` clipped completions, best reward `0.882` |
 | Strict 9B quick eval | `2/3` held-out prompts built successfully |
 
 The strict GRPO run produced:
@@ -124,6 +139,8 @@ The strict GRPO run produced:
 ![Strict GRPO reward curve](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
 
 ![Strict GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
+
+![Final adaptive repair chunk metrics](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/docs/detailed-blog/rendered-assets/adaptive-final-8192-chunk-metrics.png)
 
 ## What The Model Learned
 
@@ -196,8 +213,10 @@ Detailed plan: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-i
 - Qwen3.5-9B SFT: [sanjuhs/qwen35-9b-cadforge-sft-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-sft-lora)
 - Qwen3.5-9B GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-lora)
 - Qwen3.5-9B strict GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+- Qwen3.5-9B adaptive repair GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
+- Training evidence bundle: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 
-## Next Adaptive Repair Curriculum
+## Adaptive Repair Curriculum
 
 After strict GRPO, CADForge mined the `320` completion traces and generated a new adaptive repair curriculum. The curriculum found the dominant failure class automatically:
 
@@ -212,4 +231,4 @@ After strict GRPO, CADForge mined the `320` completion traces and generated a ne
 | unknown build failure | `15` |
 | low editability | `4` |
 
-This curriculum should be run as a staged next round: short buildable repairs first, then harder semantic and reference-similarity repairs once the build rate is stable.
+The first adaptive run was useful because it failed loudly: `120` repair completions produced `0` builds and showed clipped outputs. We fixed the curriculum and completion budget, reran it as `20260426-adaptive-repair-final-8192`, and got `53/180` buildable repairs with `0` clipped completions. That is the self-improvement loop in miniature: the environment found a concrete weakness, generated a targeted repair distribution, and the next run improved that failure mode.

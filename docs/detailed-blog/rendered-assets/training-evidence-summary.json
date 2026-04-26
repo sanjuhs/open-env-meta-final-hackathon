@@ -1,0 +1,52 @@
+[
+  {
+    "label": "2B dense\nGRPO",
+    "rows": 160,
+    "builds": 0,
+    "rate": 0.0,
+    "fixtures": 118,
+    "imports": 160,
+    "mean": 0.3386705799094332,
+    "best": 0.8778489546083039
+  },
+  {
+    "label": "9B dense\nGRPO",
+    "rows": 160,
+    "builds": 0,
+    "rate": 0.0,
+    "fixtures": 119,
+    "imports": 160,
+    "mean": 0.4354595423371251,
+    "best": 0.8977539244494972
+  },
+  {
+    "label": "9B strict\nbuild gate",
+    "rows": 320,
+    "builds": 96,
+    "rate": 0.3,
+    "fixtures": 232,
+    "imports": 319,
+    "mean": -0.26159111680729247,
+    "best": 0.9449412121370865
+  },
+  {
+    "label": "Adaptive v1\nclipped bug",
+    "rows": 120,
+    "builds": 0,
+    "rate": 0.0,
+    "fixtures": 1,
+    "imports": 116,
+    "mean": -0.8301666666666666,
+    "best": -0.74
+  },
+  {
+    "label": "Adaptive final\n8192",
+    "rows": 180,
+    "builds": 53,
+    "rate": 0.29444444444444445,
+    "fixtures": 175,
+    "imports": 180,
+    "mean": -0.21281147891801996,
+    "best": 0.8816729482901091
+  }
+]

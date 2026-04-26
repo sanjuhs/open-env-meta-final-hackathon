@@ -122,21 +122,42 @@ This is why the project fits OpenEnv: the model is not answering a static questi
 
 CADForge rewards are layered because CAD has multiple ways to fail.
 
-| Reward dimension | What it checks | Why it matters |
+| Reward dimension | Full reward weight | Fast GRPO weight | What it checks | Why it matters |
+|---|---:|---:|---|---|
+| Build | 0.18 | 0.22 | Python + CadQuery executes and exports geometry | broken code is not CAD |
+| Topology | 0.17 | 0.17 | non-empty volume, sane bounds, component count, watertight/manifold proxies | prevents empty or broken outputs |
+| Contact | 0.10 | 0.12 | disconnected parts and excessive gaps | physical assemblies need contact or intentional joints |
+| Semantic parts | 0.15 | 0.25 | task-specific hints in code and geometry | a stator should have ring/teeth/shaft opening; a caster should have wheel/fork/axle |
+| Reference similarity | 0.15 | 0.10 | bbox, silhouettes, point/voxel/mesh metrics when a GLB exists | aligns code-CAD to reference objects |
+| Silhouette | 0.10 | included in fast reference proxy | rendered outline agreement | useful for reports, too expensive for every GRPO step |
+| Editability | 0.10 | 0.10 | named dimensions, helper functions, final `fixture`, clean reusable structure | rewards useful CAD, not opaque mesh blobs |
+| Efficiency | 0.05 | 0.04 | compact, stable code | discourages bloated or fragile programs |
+
+The full reward is better for reports and offline evaluation because it can spend more time on reference and silhouette checks. The fast reward is what we use inside GRPO. It keeps the same shape, but replaces expensive visual metrics with cheaper proxies so training can call the verifier many times.
+
+![Successful CADForge reward JSON](./rendered-assets/successful-build-reward-json.png)
+
+We tried several reward variants before the current one:
+
+| Variant | What it did | What we learned |
 |---|---|---|
-| Build | Python + CadQuery executes and exports geometry | broken code is not CAD |
-| Topology | non-empty volume, sane bounds, component count, watertight/manifold proxies | prevents empty or broken outputs |
-| Contact | disconnected parts and excessive gaps | physical assemblies need contact or intentional joints |
-| Semantic parts | task-specific hints in code and geometry | a stator should have ring/teeth/shaft opening; a caster should have wheel/fork/axle |
-| Reference similarity | bbox, silhouettes, point/voxel/mesh metrics when a GLB exists | aligns code-CAD to reference objects |
-| Editability | named dimensions, helper functions, final `fixture`, clean reusable structure | rewards useful CAD, not opaque mesh blobs |
-| Efficiency | compact, stable code | discourages bloated or fragile programs |
+| Cheap code reward | rewarded imports, `fixture`, `Workplane`, functions, and semantic words | useful only for smoke tests; too easy to game with code-shaped text |
+| Dense CADForge reward | gave partial credit for topology, semantics, editability, and reference hints | reward improved, but build rate stayed at 0% because failed builds still got positive-looking signal |
+| Build-fail shaping | softened failed builds with a small code-shape reward | this was the biggest mistake: it made broken CAD look trainable while the verifier was still rejecting every export |
+| Strict build-gated reward | failed builds are negative; dense reward unlocks only after build succeeds | produced the first real jump: 96/320 strict GRPO completions built |
+| Adaptive repair GRPO | starts from strict GRPO and trains directly on categorized failures | designed to reduce syntax closure, missing fixture, invented API, and clipped final assemblies |
 
 The key lesson from training was reward order. Dense reward was useful, but too forgiving. The model could receive partial reward while still failing the build gate. The strict reward changed the order:
 
 1. if CadQuery does not build, return a negative reward with diagnostics;
 2. if it builds, unlock the dense CADForge rewards;
 3. mine the failure class for the next curriculum.
+
+For failed builds, the current strict gate uses the cheap code score only as a small diagnostic shaper inside a negative range. In plain language: a broken file can be "less bad" if it has the right skeleton, but it cannot receive a good reward until it actually builds.
+
+![Failed build traceback and reward JSON](./rendered-assets/failed-build-traceback-json.png)
+
+The other fix was logging. Early summaries depended too much on weak signals and truncated stdout. The current debug rows store the generated code, parsed reward JSON, build flag, total CADForge score, error class, and stdout/stderr tails. That made the failure distribution visible enough to become curriculum data.
 
 ## Training Data: What the Model Actually Saw
 
@@ -228,9 +249,13 @@ The adaptive curriculum generator produced a 180-row repair set from 320 strict 
 | unknown build failure | 15 |
 | low editability | 4 |
 
+![Adaptive curriculum failure classes](./rendered-assets/adaptive-curriculum-failure-classes.png)
+
 This is the next curriculum target. It should be run as staged curriculum: first short buildable repairs with generous completion length, then harder semantic and reference-similarity repairs after the model is reliably closing files.
 
 This is still valuable. It proves the environment can discover a new weakness automatically and produce the next training distribution.
+
+![Self-improvement loop summary](./rendered-assets/self-improvement-loop-summary.png)
 
 ### Loop 2: Prompt to Image to GLB to CAD Reward
 
@@ -255,11 +280,13 @@ The wedge is important:
 
 > Image-to-3D gives us a reference mesh. CADForge turns that reference into a reward signal for editable code-CAD.
 
+![GLB reference beside generated CadQuery render](./rendered-assets/glb-reference-vs-cadquery-render.png)
+
 With 3,000 to 5,000 diverse objects, this becomes a plausible route to a small CAD-specialist model that can start from a prompt, generate buildable CadQuery, and repair itself under verifier feedback.
 
 ## Training Runs
 
-The judge-facing model artifacts are on Hugging Face:
+The model artifacts are on Hugging Face:
 
 | Artifact | What it means | Link |
 |---|---|---|
@@ -267,7 +294,19 @@ The judge-facing model artifacts are on Hugging Face:
 | Qwen3.5-2B SFT + GRPO | first dense reward probe | [model](https://huggingface.co/sanjuhs/qwen35-2b-cadforge-grpo-lora) |
 | Qwen3.5-9B SFT | larger model learns syntax/style faster | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-sft-lora) |
 | Qwen3.5-9B SFT + dense GRPO | dense reward before strict build gating | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-lora) |
-| Qwen3.5-9B strict GRPO | best current result; build-gated reward | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora) |
+| Qwen3.5-9B strict GRPO | first buildability breakthrough; build-gated reward | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora) |
+| Qwen3.5-9B adaptive repair GRPO | final repair-specialist run; fixes clipping and trains on mined failures | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora) |
+
+The raw evidence bundle is also public:
+
+- Training logs and reports: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+- Compressed archive on that dataset: `archives/cadforge-training-evidence-20260426.tar.gz`
+- Per-completion reward traces: `training/logs/*completions.jsonl`
+- Parsed plots and metrics: `training/reports/*`
+
+Those logs are the backbone of the story. They show when scalar reward looked good but buildability was still zero, when strict build gating created a real separation, and when adaptive repair fixed the clipped-output failure.
+
+![Training evidence build-rate summary](./rendered-assets/training-evidence-build-rate-summary.png)
 
 ### SFT Results
 
@@ -297,6 +336,8 @@ The first GRPO runs had positive-looking reward movement, but the debug rows exp
 
 This was the most important environment-design lesson: in CAD, buildability must be the first gate.
 
+![Build-rate comparison across reward variants](./rendered-assets/build-rate-comparison.png)
+
 ### Strict Build-Gated GRPO: The Breakthrough Run
 
 The strict 9B GRPO run changed the reward. Broken builds became negative. Successful builds unlocked dense rewards.
@@ -325,7 +366,106 @@ The held-out eval after strict GRPO built two of three prompts:
 | caster wheel fork | 0.738 | 1.0 | 0.452 | 0.942 |
 | four-leg chair | -1.000 | 0.0 | 0.000 | 0.000 |
 
+![Strict GRPO generated stator render](./rendered-assets/strict-grpo-stator-render.png)
+
+![Strict GRPO generated caster fork render](./rendered-assets/strict-grpo-caster-render.png)
+
+![Failed held-out chair clipped before final assembly](./rendered-assets/failed-chair-clipped-code.png)
+
 The chair still failed because the generated code clipped before closing the final assembly. That failure directly motivated the adaptive repair curriculum.
+
+The same held-out prompt before and after strict GRPO makes the improvement more obvious:
+
+![Base or weak output vs strict GRPO output on the caster prompt](./rendered-assets/before-after-caster-weak-vs-strict-grpo.png)
+
+The important output is still editable code, not just a mesh:
+
+![CadQuery snippet beside rendered STL](./rendered-assets/cadquery-code-beside-render.png)
+
+The local demo UI shows the intended interaction loop: prompt, code, render, reward, and repair feedback in one place.
+
+![CADForge repair loop UI](./rendered-assets/hugging-face-space-repair-loop-ui.png)
+
+## Final Adaptive Repair Run
+
+The final run, `20260426-adaptive-repair-final-8192`, is not another broad prompt-to-CAD run. It is a repair-specialization round.
+
+| Choice | Strict GRPO run | Current adaptive repair run |
+|---|---|---|
+| Starting point | SFT adapter | strict-build GRPO adapter |
+| Data | prompt-to-CAD training rows | 180 repair rows mined from strict GRPO debug failures |
+| Main target | make first completions build | fix known failure classes from the current model |
+| Reward | strict build gate + fast CADForge reward | same strict gate, but on repair prompts |
+| Prompt shape | normal design request | failed code excerpt + verifier observation + rewrite instruction |
+| Sequence budget | shorter completions | larger context and `8192` completion budget |
+
+The earlier adaptive repair attempt exposed another mistake: completion length was too small for long broken CAD files, and many outputs clipped before the final `fixture`. That run showed `0%` builds and a 100% clipped-completion pattern, which is exactly the kind of bad result a real environment should surface quickly.
+
+The final script fixed that experiment design:
+
+- it starts from `outputs/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build`, not from the weaker SFT model;
+- it generates a foundation-stage repair curriculum from strict GRPO debug rows;
+- it keeps only a compact previous-code excerpt instead of dumping a huge failed file into the prompt;
+- it asks for a short complete rewrite rather than a continuation of clipped code;
+- it raises `MAX_COMPLETION_LENGTH` to `8192` and `MAX_SEQ_LENGTH` to `16384`;
+- it keeps the strict build gate, so failed repairs stay negative.
+
+The result validated the loop:
+
+| Run | Repair completions | Built | Build rate | Fixture rate | Import rate | Clipped completions | Best reward | Best CADForge total |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| earlier adaptive repair | 120 | 0 | 0.0% | 0.8% | 96.7% | 100% pattern | -0.740 | -1.000 |
+| final adaptive repair 8192 | 180 | 53 | 29.4% | 97.2% | 100.0% | 0 | 0.882 | 0.861 |
+
+![Final adaptive repair reward](../../training/reports/qwen35-9b-grpo-20260426-adaptive-repair-final-8192/grpo_reward_curve.png)
+
+![Final adaptive repair code health](../../training/reports/qwen35-9b-grpo-20260426-adaptive-repair-final-8192/grpo_code_health.png)
+
+![Final adaptive repair error breakdown](../../training/reports/qwen35-9b-grpo-20260426-adaptive-repair-final-8192/grpo_error_breakdown.png)
+
+![Final adaptive repair chunk metrics](./rendered-assets/adaptive-final-8192-chunk-metrics.png)
+
+This is the cleanest self-improvement evidence in the project: CADForge found a failure class, generated the next repair curriculum, and the next run turned a clipped 0% repair run into 53 buildable repairs.
+
+## Evidence From the Logs
+
+The training evidence bundle contains both human-readable plots and raw JSONL traces. The important files are:
+
+| Evidence file | What it proves |
+|---|---|
+| `training/logs/grpo-2b-completions.jsonl` | the 2B dense GRPO baseline received reward but built `0/160` completions |
+| `training/logs/grpo-9b-completions.jsonl` | the 9B dense GRPO baseline also built `0/160`, proving dense reward was too forgiving |
+| `training/logs/grpo-9b-strict-build-20260426-strict-build-completions.jsonl` | strict build gating produced `96/320` buildable completions |
+| `training/logs/grpo-9b-20260426-adaptive-repair-completions.jsonl` | adaptive v1 failed with `0/120` builds, exposing clipped completions and poor curriculum ordering |
+| `training/logs/grpo-9b-20260426-adaptive-repair-final-8192-completions.jsonl` | final adaptive repair produced `53/180` buildable repairs with `0` clipped completions |
+| `training/reports/*/metrics.json` | parsed reward, loss, token, clipping, and optimizer metrics for custom charts |
+| `training/reports/*/*.png` | judge-facing reward curves, code health plots, timelines, and error breakdowns |
+
+This evidence matters because CADForge did not just train once and report a curve. It used the logs to change the environment:
+
+1. Dense GRPO looked encouraging, but logs showed no builds.
+2. Strict build gating turned failed CAD into negative reward.
+3. Strict GRPO debug rows exposed the next failure distribution.
+4. Adaptive repair v1 failed because completions were clipped.
+5. The final 8192-token adaptive run fixed the setup and recovered buildable repairs.
+
+That is the clearest Theme 4 claim: the environment adapts based on observed failures, and the logs show each adaptation.
+
+## Final Inference Comparison
+
+For a concrete final output, we compared base Qwen, RL-tuned Qwen, and a GPT-5.4 frontier artifact on the same medium-difficulty stator prompt.
+
+![Base Qwen vs RL-tuned Qwen vs GPT-5.4 on an axial motor stator](../../inference/results/stator-qwen-vs-frontier/comparison.png)
+
+| Model | Total | Build | Semantic | Editability | What happened |
+|---|---:|---:|---:|---:|---|
+| Base Qwen | -1.000 | 0.0 | 0.000 | 0.000 | failed the export contract: no final `fixture` |
+| RL-tuned Qwen | 0.654 | 1.0 | 0.300 | 0.825 | built a compact editable stator with ring, teeth, and center opening |
+| GPT-5.4 | 0.709 | 1.0 | 0.638 | 0.825 | built a richer stator with stronger semantic detail |
+
+This is not a claim that Qwen beats GPT-5.4. The frontier model is still stronger on semantic richness in this one example. The important result is that CADForge moved Qwen from a base-model build failure to a buildable, editable CAD output in the same part family where a frontier model succeeds.
+
+That is the commercial shape of the project: use an RL environment to train small specialist CAD models until they compete with frontier models on narrower engineering workflows, then keep improving them through verifier feedback.
 
 ## What the Agent Learned
 
@@ -344,82 +484,39 @@ After strict reward:
 - best CADForge score reached 0.9352,
 - buildable outputs separated sharply from broken outputs.
 
-That is real learning signal. It also surfaces the next failure mode: long complex objects like chairs still need better syntax-closure and final assembly discipline.
+After adaptive repair:
 
-## The Demo Story for Judges
+- 53 of 180 mined repair completions built successfully,
+- fixture presence improved from 0.8% in the failed adaptive attempt to 97.2%,
+- clipped completions dropped to 0,
+- SyntaxError fell from 95/120 earlier adaptive rows to 12/180 final adaptive rows.
 
-The story should be shown in four beats:
+That is real learning signal. It also surfaces the next failure mode: after syntax closure improves, the remaining bottlenecks become undefined names, type/value CAD-kernel errors, and semantic assembly quality.
 
-1. **Frontier models struggle.** Show the Markus chair screenshots. Even huge models produce floating, disconnected, or brittle CAD.
-2. **CADForge turns failure into reward.** Show the environment loop and reward table.
-3. **SFT teaches syntax; GRPO teaches buildability.** Show SFT loss curves and strict GRPO reward/code-health graphs.
-4. **The environment self-improves.** Show the adaptive curriculum loop: failed rollouts become the next training rows.
+## Visual Asset Checklist
 
-For non-technical audiences, the line is:
+All must-have visuals are now present locally in `docs/detailed-blog/rendered-assets/` and referenced above:
 
-> We built a CAD teacher. It compiles the student's design, tells it exactly how it failed, and creates the next lesson from that failure.
-
-For technical audiences, the line is:
-
-> CADForge is a build-gated RLVE for executable CadQuery, with reward dimensions for topology, contact, semantic parts, reference similarity, editability, and adaptive curriculum mining from real compiler/geometry failures.
-
-## What Screenshots We Still Want
-
-The blog is ready to accept more visuals. The best additions would be:
-
-| Screenshot | Why it helps |
+| Visual | Status |
 |---|---|
-| baseline tiny Qwen output that does not compile | shows cold-start failure |
-| SFT output that compiles but is semantically weak | shows SFT learns syntax first |
-| strict GRPO output that builds stator/caster | shows RL reward improves behavior |
-| Hugging Face Space before/after repair loop | makes the demo tangible |
-| GLB reference next to generated CadQuery render | explains reference similarity |
-| one slide-style summary of both self-improvement loops | helps non-technical judges |
+| strict GRPO generated stator render | present |
+| strict GRPO generated caster fork render | present |
+| failed chair or clipped-code screenshot | present |
+| before/after base-or-weak vs strict GRPO comparison | present |
+| successful reward JSON screenshot | present |
+| failed build traceback/failure screenshot | present |
+| demo UI screenshot | present |
+| CadQuery snippet beside rendered STL | present |
+| GLB reference beside generated CadQuery render | present |
+| compact build-rate chart | present |
+| adaptive curriculum failure-class chart | present |
+| self-improvement loop summary | present |
 
-## Why This Fits the Judging Criteria
+The only additional images that would make the case stronger are:
 
-### Environment Innovation: 40%
-
-CADForge is novel because it is not just another text-to-3D generator. It is a real tool-using CAD environment:
-
-- executable CadQuery code as the action,
-- real compiler/export feedback,
-- persistent artifacts,
-- semantic and editability reward,
-- GLB reference similarity,
-- adaptive failure mining.
-
-The challenge is genuinely hard because the model must satisfy syntax, API correctness, geometry, task semantics, and code structure at the same time.
-
-### Storytelling and Presentation: 30%
-
-The story is easy to follow:
-
-1. even frontier models struggle with complex CAD;
-2. a verifier catches what humans see immediately: floating parts, bad proportions, broken code;
-3. SFT teaches the model to speak CadQuery;
-4. GRPO teaches it that buildable CAD is better than broken text;
-5. the environment mines failures to create the next curriculum.
-
-### Showing Improvement in Rewards: 20%
-
-The reward evidence is concrete:
-
-- SFT loss falls for both 2B and 9B;
-- dense GRPO exposed reward design flaws;
-- strict GRPO produced 30% buildable completions and best score 0.9352;
-- held-out eval built 2 of 3 objects;
-- adaptive curriculum mining identified the next bottleneck: syntax closure on long repairs.
-
-### Reward and Training Pipeline: 10%
-
-The pipeline is coherent:
-
-- prompt-to-CAD and repair SFT rows teach format;
-- strict build-gated GRPO executes every candidate;
-- reward JSON separates build, topology, semantics, reference similarity, and editability;
-- failed trajectories are converted into targeted repair tasks;
-- GLB reference generation gives a scalable route to more tasks.
+- a side-by-side repair example: failed code/render on the left, repaired buildable CAD on the right;
+- one real merged LoRA or demo inference screenshot if the model is served through vLLM or the Hugging Face Space;
+- a STEP export screenshot once STEP output is added, because that speaks directly to CAD usefulness beyond STL.
 
 ## Future Work
 
@@ -427,7 +524,7 @@ The next version should:
 
 - merge LoRA checkpoints and serve rollouts through vLLM for faster GRPO;
 - cache GLB reference metrics so similarity rewards are cheap during training;
-- shorten adaptive repair prompts to reduce syntax clipping;
+- use the final adaptive repair result to build the next curriculum around undefined names, type/value errors, and semantic assembly quality;
 - add a mechanical-load reward once buildability is stable;
 - generate thousands of prompt/image/GLB tasks through the reference loop;
 - add STEP export and stricter CAD topology checks;
