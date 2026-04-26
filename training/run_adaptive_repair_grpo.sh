@@ -34,9 +34,16 @@ LOG="${LOG:-training/logs/grpo-9b-$RUN.log}"
 DEBUG="${DEBUG:-training/logs/grpo-9b-$RUN-completions.jsonl}"
 REPORT="${REPORT:-training/reports/qwen35-9b-grpo-$RUN}"
 MAX_ROWS="${MAX_ROWS:-180}"
-LIMIT_PROMPTS="${LIMIT_PROMPTS:-24}"
+LIMIT_PROMPTS="${LIMIT_PROMPTS:-48}"
 MAX_STEPS="${MAX_STEPS:-30}"
 NUM_GENERATIONS="${NUM_GENERATIONS:-2}"
+PREVIOUS_CODE_CHARS="${PREVIOUS_CODE_CHARS:-2200}"
+MAX_PROMPT_LENGTH="${MAX_PROMPT_LENGTH:-4096}"
+MAX_COMPLETION_LENGTH="${MAX_COMPLETION_LENGTH:-8192}"
+MAX_SEQ_LENGTH="${MAX_SEQ_LENGTH:-16384}"
+PER_DEVICE_TRAIN_BATCH_SIZE="${PER_DEVICE_TRAIN_BATCH_SIZE:-1}"
+GRADIENT_ACCUMULATION_STEPS="${GRADIENT_ACCUMULATION_STEPS:-4}"
+CURRICULUM_STAGE="${CURRICULUM_STAGE:-foundation}"
 
 rm -f "$DEBUG"
 
@@ -47,7 +54,9 @@ rm -f "$DEBUG"
     --tasks experiment-2-cadforge/data/cad_tasks.json \
     --output "$CURRICULUM" \
     --summary "$SUMMARY" \
-    --max-rows "$MAX_ROWS"
+    --max-rows "$MAX_ROWS" \
+    --previous-code-chars "$PREVIOUS_CODE_CHARS" \
+    --curriculum-stage "$CURRICULUM_STAGE"
 
   echo "[$(date -Is)] Starting adaptive repair GRPO from $BASE_ADAPTER"
   uv run training/train_grpo_cadforge.py \
@@ -62,11 +71,11 @@ rm -f "$DEBUG"
     --limit-prompts "$LIMIT_PROMPTS" \
     --max-steps "$MAX_STEPS" \
     --num-generations "$NUM_GENERATIONS" \
-    --max-prompt-length 6144 \
-    --max-completion-length 1536 \
-    --max-seq-length 8192 \
-    --per-device-train-batch-size 2 \
-    --gradient-accumulation-steps 2 \
+    --max-prompt-length "$MAX_PROMPT_LENGTH" \
+    --max-completion-length "$MAX_COMPLETION_LENGTH" \
+    --max-seq-length "$MAX_SEQ_LENGTH" \
+    --per-device-train-batch-size "$PER_DEVICE_TRAIN_BATCH_SIZE" \
+    --gradient-accumulation-steps "$GRADIENT_ACCUMULATION_STEPS" \
     --learning-rate 2e-6 \
     --debug-completions-jsonl "$DEBUG" \
     --run-name "qwen35-9b-grpo-$RUN"

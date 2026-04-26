@@ -18,6 +18,7 @@ Assign the final exportable object to fixture.
 Prefer named dimensions and helper functions so the CAD can be edited in later steps.
 Use conservative CadQuery operations: box, cylinder, circle/extrude, union, cut, fillet, translate, rotate.
 Do not invent APIs like Workplane.cone, Workplane.annulus, or helper methods that are not defined.
+Keep the repair compact: prefer a shorter complete model over a long unfinished one.
 End with a valid fixture assignment, usually fixture = fixture.clean()."""
 
 
@@ -158,11 +159,36 @@ def failure_observation(row: dict[str, Any], failure_type: str) -> str:
     )
 
 
-def make_messages(row: dict[str, Any], task: dict[str, Any], failure_type: str, curriculum_weight: float) -> list[dict[str, str]]:
+def code_excerpt(code: str, max_chars: int) -> str:
+    code = code.strip()
+    if max_chars <= 0 or len(code) <= max_chars:
+        return code
+    head_chars = max_chars * 2 // 3
+    tail_chars = max_chars - head_chars
+    return (
+        code[:head_chars].rstrip()
+        + "\n\n# ... previous broken code omitted ...\n\n"
+        + code[-tail_chars:].lstrip()
+    )
+
+
+def make_messages(
+    row: dict[str, Any],
+    task: dict[str, Any],
+    failure_type: str,
+    curriculum_weight: float,
+    previous_code_chars: int,
+) -> list[dict[str, str]]:
     code = str(row.get("code") or row.get("code_head") or "").strip()
     policy = "\n".join(f"- {item}" for item in POLICIES.get(failure_type, POLICIES["unknown_build_failure"]))
     hints = task.get("semantic_hints") if isinstance(task.get("semantic_hints"), list) else []
     prompt = task.get("prompt") or str(row.get("task_prompt") or "")
+    rewrite_instruction = (
+        "Do not continue the previous code. It was clipped or broken. "
+        "Rewrite a shorter complete file from scratch, using the previous code only as a hint."
+        if failure_type in {"syntax_closure", "missing_fixture"}
+        else "Repair the previous code, but simplify aggressively if needed."
+    )
     user = f"""Task:
 {prompt}
 
@@ -179,14 +205,86 @@ Adaptive repair policy for this failure:
 
 Curriculum weight: {curriculum_weight:.3f}
 
-Previous CadQuery code:
-{code[:12000]}
+Repair mode:
+{rewrite_instruction}
 
-Repair it into a complete executable CadQuery Python file. Return only the repaired Python file."""
+Previous CadQuery code excerpt:
+{code_excerpt(code, previous_code_chars)}
+
+Repair it into a complete executable CadQuery Python file under roughly 120 lines.
+Return only the repaired Python file."""
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user},
     ]
+
+
+LEVEL_RANK = {"easy": 0, "medium": 1, "hard": 2}
+FOUNDATION_FAILURE_RANK = {
+    "missing_fixture": 0,
+    "undefined_name": 1,
+    "invented_api": 2,
+    "type_or_value": 3,
+    "syntax_closure": 4,
+    "low_editability": 5,
+    "disconnected_or_weak": 6,
+    "unknown_build_failure": 7,
+}
+
+
+def balanced_order(rows: list[dict[str, Any]], key_priority: dict[tuple[str, str], tuple[Any, ...]] | None = None) -> list[dict[str, Any]]:
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        groups[(str(row["failure_type"]), str(row["task_id"]))].append(row)
+    for group in groups.values():
+        group.sort(key=lambda row: -float(row["curriculum_weight"]))
+    keys = sorted(
+        groups,
+        key=lambda key: key_priority.get(key)
+        if key_priority and key in key_priority
+        else (
+            -max(float(row["curriculum_weight"]) for row in groups[key]),
+            key[0],
+            key[1],
+        ),
+    )
+    ordered: list[dict[str, Any]] = []
+    while any(groups.values()):
+        for key in keys:
+            if groups[key]:
+                ordered.append(groups[key].pop(0))
+    return ordered
+
+
+def staged_order(rows: list[dict[str, Any]], stage: str) -> list[dict[str, Any]]:
+    if stage == "hard":
+        return sorted(rows, key=lambda row: (-float(row["curriculum_weight"]), row["failure_type"], row["task_id"]))
+    if stage == "balanced":
+        return balanced_order(sorted(rows, key=lambda row: -float(row["curriculum_weight"])))
+    if stage == "foundation":
+        foundation_rows = sorted(
+            rows,
+            key=lambda row: (
+                LEVEL_RANK.get(str(row.get("task_level") or "medium"), 1),
+                FOUNDATION_FAILURE_RANK.get(str(row["failure_type"]), 99),
+                -float(row["curriculum_weight"]),
+                row["task_id"],
+            ),
+        )
+        key_priority: dict[tuple[str, str], tuple[Any, ...]] = {}
+        for row in foundation_rows:
+            key = (str(row["failure_type"]), str(row["task_id"]))
+            key_priority.setdefault(
+                key,
+                (
+                    LEVEL_RANK.get(str(row.get("task_level") or "medium"), 1),
+                    FOUNDATION_FAILURE_RANK.get(str(row["failure_type"]), 99),
+                    -float(row["curriculum_weight"]),
+                    row["task_id"],
+                ),
+            )
+        return balanced_order(foundation_rows, key_priority)
+    raise ValueError(f"unknown curriculum stage: {stage}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -196,6 +294,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path, default=Path("training/output/cadforge_adaptive_repair_curriculum.jsonl"))
     parser.add_argument("--summary", type=Path, default=Path("training/output/cadforge_adaptive_repair_summary.json"))
     parser.add_argument("--max-rows", type=int, default=180)
+    parser.add_argument("--previous-code-chars", type=int, default=2400)
+    parser.add_argument("--curriculum-stage", choices=["foundation", "balanced", "hard"], default="foundation")
     parser.add_argument("--include-buildable-weak", action="store_true")
     return parser.parse_args()
 
@@ -236,9 +336,10 @@ def main() -> None:
         score = float(row.get("score", row.get("cadforge_total", 0.0)) or 0.0)
         output_rows.append(
             {
-                "messages": make_messages(row, task, failure_type, curriculum_weight),
+                "messages": make_messages(row, task, failure_type, curriculum_weight, args.previous_code_chars),
                 "task_id": task_id,
                 "task_spec": task,
+                "task_level": task.get("level", "medium"),
                 "dataset_type": "adaptive_repair_grpo_prompt",
                 "failure_type": failure_type,
                 "curriculum_weight": curriculum_weight,
@@ -249,7 +350,7 @@ def main() -> None:
             }
         )
 
-    output_rows.sort(key=lambda row: (-float(row["curriculum_weight"]), row["failure_type"], row["task_id"]))
+    output_rows = staged_order(output_rows, args.curriculum_stage)
     output_rows = output_rows[: args.max_rows]
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -264,6 +365,8 @@ def main() -> None:
         "task_counts": dict(task_counts),
         "task_builds": dict(task_builds),
         "output": str(args.output),
+        "previous_code_chars": args.previous_code_chars,
+        "curriculum_stage": args.curriculum_stage,
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)
     args.summary.write_text(json.dumps(summary, indent=2, sort_keys=True))

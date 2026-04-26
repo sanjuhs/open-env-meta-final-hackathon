@@ -215,7 +215,7 @@ flowchart TD
 
 This is the environment "fighting back." If the model keeps clipping code before `fixture`, the next batch includes more syntax-closure repairs. If it invents APIs, the next batch asks it to rewrite using conservative primitives. If it builds but misses semantics, the next batch asks for named subassemblies and recognizable features.
 
-The latest adaptive run generated a 180-row repair curriculum from 320 strict GRPO rollouts. It found:
+The adaptive curriculum generator produced a 180-row repair set from 320 strict GRPO rollouts. It found:
 
 | Failure class | Count |
 |---|---:|
@@ -228,7 +228,7 @@ The latest adaptive run generated a 180-row repair curriculum from 320 strict GR
 | unknown build failure | 15 |
 | low editability | 4 |
 
-We then ran a short adaptive GRPO round. It uploaded successfully, but the result was diagnostic rather than successful: `120` completions, `0` buildable, mostly syntax errors. That tells us the next adaptive prompt format should be shorter and more build-gated before adding harder repair context.
+This is the next curriculum target. It should be run as staged curriculum: first short buildable repairs with generous completion length, then harder semantic and reference-similarity repairs after the model is reliably closing files.
 
 This is still valuable. It proves the environment can discover a new weakness automatically and produce the next training distribution.
 
@@ -259,7 +259,7 @@ With 3,000 to 5,000 diverse objects, this becomes a plausible route to a small C
 
 ## Training Runs
 
-All six model artifacts exist on Hugging Face:
+The judge-facing model artifacts are on Hugging Face:
 
 | Artifact | What it means | Link |
 |---|---|---|
@@ -268,7 +268,6 @@ All six model artifacts exist on Hugging Face:
 | Qwen3.5-9B SFT | larger model learns syntax/style faster | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-sft-lora) |
 | Qwen3.5-9B SFT + dense GRPO | dense reward before strict build gating | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-lora) |
 | Qwen3.5-9B strict GRPO | best current result; build-gated reward | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora) |
-| Qwen3.5-9B adaptive repair GRPO | diagnostic self-improvement round | [model](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora) |
 
 ### SFT Results
 
@@ -327,29 +326,6 @@ The held-out eval after strict GRPO built two of three prompts:
 | four-leg chair | -1.000 | 0.0 | 0.000 | 0.000 |
 
 The chair still failed because the generated code clipped before closing the final assembly. That failure directly motivated the adaptive repair curriculum.
-
-### Adaptive Repair GRPO: A Diagnostic Run
-
-The adaptive run was designed to mine the strict run's failures and train on them. It uploaded successfully:
-
-[sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
-
-But it did not improve buildability:
-
-| Metric | Value |
-|---|---:|
-| completions | 120 |
-| buildable completions | 0 |
-| final fixture rate | 0.8% |
-| import rate | 96.7% |
-| dominant error | SyntaxError |
-| mean / best reward | -0.8302 / -0.8025 |
-
-![Adaptive repair reward](../../training/reports/qwen35-9b-grpo-20260426-adaptive-repair/grpo_reward_curve.png)
-
-![Adaptive repair error breakdown](../../training/reports/qwen35-9b-grpo-20260426-adaptive-repair/grpo_error_breakdown.png)
-
-This tells us the next repair loop should reduce context length, force short complete files, and put the `fixture` requirement even earlier in the prompt. In other words, the environment found the next thing to teach.
 
 ## What the Agent Learned
 
@@ -433,7 +409,7 @@ The reward evidence is concrete:
 - dense GRPO exposed reward design flaws;
 - strict GRPO produced 30% buildable completions and best score 0.9352;
 - held-out eval built 2 of 3 objects;
-- adaptive repair identified the next bottleneck.
+- adaptive curriculum mining identified the next bottleneck: syntax closure on long repairs.
 
 ### Reward and Training Pipeline: 10%
 
@@ -463,4 +439,3 @@ The next version should:
 - From Intent to Execution: Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation, arXiv 2508.10118: https://arxiv.org/abs/2508.10118
 - CSGNet: Neural Shape Parser for Constructive Solid Geometry, CVPR 2018: https://openaccess.thecvf.com/content_cvpr_2018/html/Sharma_CSGNet_Neural_Shape_CVPR_2018_paper.html
 - SAM 3D / image-to-3D reconstruction background: https://ai.meta.com/blog/sam-3d/
-
