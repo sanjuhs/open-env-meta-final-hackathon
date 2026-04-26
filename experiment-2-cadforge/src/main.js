@@ -9,6 +9,9 @@ const app = document.querySelector("#app");
 const route = window.location.pathname;
 const detailedBlogUrl =
   "https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/docs/detailed-blog/cadforge-detailed-blog.md";
+const bestModelUrl = "https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora";
+const trainingLogsUrl = "https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence";
+const trainingGistUrl = "https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb";
 const isLandingPage = route === "/" || route === "/index.html";
 const isCadQueryGeneratorPage = route === "/cadquery";
 const isCadQueryRendererPage = route === "/cadquery-renderer";
@@ -48,6 +51,51 @@ app.innerHTML = `
           <strong>Detailed blog</strong>
           <small>Read the full hackathon story: frontier model failures, reward design, SFT/GRPO evidence, and self-improvement loops.</small>
         </a>
+        <a class="route-card" href="${bestModelUrl}" target="_blank" rel="noreferrer">
+          <span>Model</span>
+          <strong>Best trained LoRA</strong>
+          <small>Download the final Qwen3.5-9B adaptive-repair adapter for CadQuery generation and repair tests.</small>
+        </a>
+      </div>
+
+      <div class="evidence-panel">
+        <div class="section-head">
+          <p class="eyebrow">RunPod H200 evidence</p>
+          <h2>Seven training runs</h2>
+          <p class="intro">We did not just run one fine-tune. CADForge exposed reward hacking, then strict build-gated GRPO and adaptive repair improved buildable CAD behavior.</p>
+        </div>
+        <div class="evidence-actions">
+          <a href="${bestModelUrl}" target="_blank" rel="noreferrer">Download best model</a>
+          <a href="${trainingLogsUrl}" target="_blank" rel="noreferrer">Training logs</a>
+          <a href="${trainingGistUrl}" target="_blank" rel="noreferrer">Training scripts Gist</a>
+        </div>
+        <table class="run-table">
+          <thead><tr><th>Run</th><th>Result</th><th>Takeaway</th></tr></thead>
+          <tbody>
+            <tr><td>1. Qwen3.5-2B SFT</td><td>loss 1.4480 -> 0.1658; eval 0.4477 -> 0.2676</td><td>learned CadQuery grammar</td></tr>
+            <tr><td>2. Qwen3.5-2B dense GRPO</td><td>160 completions; 0.0% builds; mean/best 0.3387 / 0.5303</td><td>reward signal existed, but was hackable</td></tr>
+            <tr><td>3. Qwen3.5-9B SFT</td><td>loss 2.6020 -> 0.1413; eval 0.3650 -> 0.2398</td><td>larger model learned structure faster</td></tr>
+            <tr><td>4. Qwen3.5-9B dense GRPO</td><td>160 completions; 0.0% builds; mean/best 0.4355 / 0.6828</td><td>higher reward still did not mean buildable CAD</td></tr>
+            <tr><td>5. Qwen3.5-9B strict GRPO</td><td>320 completions; 96 buildable; best CADForge score 0.9352</td><td>build gate created the breakthrough</td></tr>
+            <tr><td>6. Adaptive repair v1</td><td>120 repairs; 0 buildable; clipped completions surfaced</td><td>environment found a curriculum bug</td></tr>
+            <tr><td>7. Adaptive repair final 8192</td><td>180 repairs; 53 buildable; 0 clipped; best reward 0.882</td><td>failure mining recovered buildable repairs</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="evidence-grid">
+        <section class="evidence-card">
+          <h2>Reward hacking lesson</h2>
+          <p>Dense reward alone was too forgiving: models earned partial credit for code-shaped text and semantic words while failing to export CAD. The fix was strict build gating: failed builds stay negative, and topology/contact/semantic/reference/editability rewards unlock only after CadQuery exports geometry.</p>
+        </section>
+        <section class="evidence-card">
+          <h2>Step reward API</h2>
+          <p>The environment acts like a standard tool/reward loop. Each CadQuery action returns build status, reward dimensions, verifier notes, artifact paths, and STL renders. Those observations become SFT rows, GRPO rollouts, or human debugging traces.</p>
+        </section>
+        <section class="evidence-card">
+          <h2>Space endpoints</h2>
+          <p><code>POST /api/space/repair-loop</code> runs weak seed -> repair -> reward. <code>POST /api/space/demo</code> scores a buildable candidate. <code>GET /api/space/loop-stl/{task_id}</code> returns generated STL artifacts for visual comparison.</p>
+        </section>
       </div>
     </section>
   </main>
@@ -61,6 +109,7 @@ app.innerHTML = `
         <a class="${isCadQueryRendererPage ? "active" : ""}" href="/cadquery-renderer">Renderer</a>
         <a class="${isCadQueryEnvPage ? "active" : ""}" href="/cadquery-env">Env</a>
         <a href="${detailedBlogUrl}" target="_blank" rel="noreferrer">Detailed Blog</a>
+        <a href="${bestModelUrl}" target="_blank" rel="noreferrer">Best Model</a>
       </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>

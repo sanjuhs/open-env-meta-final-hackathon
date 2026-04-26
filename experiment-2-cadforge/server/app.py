@@ -305,10 +305,57 @@ SPACE_HTML = r'''
       }
       .card h3 { margin: 0 0 8px; color: #17202a; }
       .card p { margin: 0; }
+      .model-callout {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: 18px;
+        border: 1px solid #b9d8c3;
+        border-radius: 8px;
+        background: #eef9f1;
+        padding: 16px;
+      }
+      .model-callout strong { color: #173b27; }
+      .model-callout p { margin: 4px 0 0; color: #395747; }
+      .model-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        border: 1px solid #2f8f46;
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: #2f8f46;
+        color: #fff;
+        font-weight: 900;
+        text-decoration: none;
+      }
       .results { background: #ffffff; border-top: 1px solid #dde5eb; border-bottom: 1px solid #dde5eb; }
       table { width: 100%; border-collapse: collapse; margin-top: 18px; background: #fff; border: 1px solid #dbe4ea; border-radius: 8px; overflow: hidden; }
       th, td { padding: 12px 14px; border-bottom: 1px solid #edf1f4; text-align: left; }
       th { color: #35566b; font-size: 13px; text-transform: uppercase; }
+      td:first-child { font-weight: 800; color: #162a38; }
+      .api-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .api-row {
+        display: grid;
+        grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+        gap: 12px;
+        border: 1px solid #dbe4ea;
+        border-radius: 8px;
+        background: #fff;
+        padding: 12px;
+      }
+      .api-row code {
+        color: #0f5f78;
+        font-weight: 900;
+        overflow-wrap: anywhere;
+      }
+      .api-row span { color: #526170; }
       .demo-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
       select {
         border: 1px solid #c9d5df;
@@ -337,6 +384,8 @@ SPACE_HTML = r'''
       @media (max-width: 920px) {
         .hero { grid-template-columns: 1fr; padding: 22px; }
         .grid { grid-template-columns: 1fr; }
+        .api-row { grid-template-columns: 1fr; }
+        table { display: block; overflow-x: auto; }
         .viewer-foot { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .trace-strip { grid-template-columns: 1fr; }
       }
@@ -355,6 +404,7 @@ SPACE_HTML = r'''
           <a class="button" href="https://github.com/sanjuhs/open-env-meta-final-hackathon" target="_blank">Training code</a>
           <a class="button" href="https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb" target="_blank">Training scripts Gist</a>
           <a class="button" href="https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence" target="_blank">Training logs</a>
+          <a class="button" href="https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora" target="_blank">Best trained model</a>
         </div>
       </div>
       <div class="viewer-panel" id="demo">
@@ -413,17 +463,60 @@ SPACE_HTML = r'''
 
     <section class="band results">
       <h2>Real training evidence</h2>
-      <p>The final strict run trained from the 9B SFT checkpoint on a RunPod H200 with TRL GRPO and real CADForge reward calls.</p>
+      <p>We ran seven distinct training experiments on RunPod H200. The important story is not just that loss went down; it is that the environment exposed reward hacking, then build-gated GRPO and adaptive repair made buildable CAD separate from broken code.</p>
       <table>
-        <thead><tr><th>Run</th><th>Result</th></tr></thead>
+        <thead><tr><th>Run</th><th>What happened</th><th>Lesson</th></tr></thead>
         <tbody>
-          <tr><td>Qwen3.5-2B SFT</td><td>train loss 1.4480 to 0.1658, eval loss 0.4477 to 0.2676</td></tr>
-          <tr><td>Qwen3.5-9B SFT</td><td>train loss 2.6020 to 0.1413, eval loss 0.3650 to 0.2398</td></tr>
-          <tr><td>Qwen3.5-2B dense GRPO</td><td>mean reward 0.3387, best reward 0.5303; useful signal but too forgiving on broken builds</td></tr>
-          <tr><td>Qwen3.5-9B strict GRPO</td><td>320 completions, 96 buildable, best CADForge score 0.9352</td></tr>
-          <tr><td>Held-out eval</td><td>2 of 3 generated CADQuery files built successfully</td></tr>
+          <tr><td>1. Qwen3.5-2B SFT</td><td>train loss 1.4480 to 0.1658; eval loss 0.4477 to 0.2676</td><td>2B learned CadQuery grammar and trace format.</td></tr>
+          <tr><td>2. Qwen3.5-2B dense GRPO</td><td>160 completions; 0.0% build rate; mean/best reward 0.3387 / 0.5303</td><td>Reward was learnable, but too hackable without a hard build gate.</td></tr>
+          <tr><td>3. Qwen3.5-9B SFT</td><td>train loss 2.6020 to 0.1413; eval loss 0.3650 to 0.2398</td><td>9B learned syntax and structure faster than 2B.</td></tr>
+          <tr><td>4. Qwen3.5-9B dense GRPO</td><td>160 completions; 0.0% build rate; mean/best reward 0.4355 / 0.6828</td><td>Bigger model got higher scalar reward while still failing buildability.</td></tr>
+          <tr><td>5. Qwen3.5-9B strict GRPO</td><td>320 completions; 96 buildable; best CADForge score 0.9352</td><td>Buildability-first reward produced the first real breakthrough.</td></tr>
+          <tr><td>6. Adaptive repair v1</td><td>120 repair completions; 0 buildable; clipped-output pattern exposed</td><td>The environment found a curriculum/completion-length bug.</td></tr>
+          <tr><td>7. Adaptive repair final 8192</td><td>180 repair completions; 53 buildable; 0 clipped completions; best reward 0.882</td><td>Failure mining plus longer completions recovered buildable repairs.</td></tr>
         </tbody>
       </table>
+      <div class="model-callout">
+        <div>
+          <strong>Best downloadable model adapter</strong>
+          <p>Use the final Qwen3.5-9B adaptive-repair LoRA to test CADQuery generation and repair locally or on a GPU notebook.</p>
+        </div>
+        <a class="model-link" href="https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora" target="_blank">Download best model</a>
+      </div>
+      <p>Held-out eval after strict GRPO built 2 of 3 generated CadQuery files successfully. The remaining failed chair case clipped before the final assembly, which directly motivated the adaptive repair run.</p>
+    </section>
+
+    <section class="band">
+      <h2>Reward hacking and reward design</h2>
+      <p>CADForge started with dense rewards for code shape, semantic words, topology, contact, reference similarity, and editability. Training showed a classic reward-hacking pattern: models could earn positive-looking reward while still producing non-buildable CAD. The fix was to make buildability the first gate.</p>
+      <div class="grid">
+        <div class="card"><h3>What was hackable</h3><p>Dense reward gave partial credit for code-like text, named parts, and semantic hints even when CadQuery failed to export an STL.</p></div>
+        <div class="card"><h3>What fixed it</h3><p>Strict GRPO makes failed builds negative. Dense topology, semantic, contact, reference, and editability scores unlock only after the CAD builds.</p></div>
+        <div class="card"><h3>Step rewards</h3><p>Each action returns reward JSON: build, topology, contact, semantic parts, reference similarity, editability, efficiency, and verifier notes.</p></div>
+      </div>
+      <pre>{
+  "build": 1.0,
+  "topology": 0.82,
+  "contact": 0.74,
+  "semantic_parts": 0.61,
+  "reference_similarity": 0.58,
+  "editability": 0.80,
+  "total": 0.86,
+  "notes": ["candidate builds", "recognizable task parts", "clean fixture"]
+}</pre>
+    </section>
+
+    <section class="band results">
+      <h2>Space APIs</h2>
+      <p>The Space is both a demo and an OpenEnv-style reward service. A model can submit CadQuery code, receive structured observations, and use those step rewards for SFT data generation, GRPO rollouts, or human-readable debugging.</p>
+      <div class="api-list">
+        <div class="api-row"><code>GET /healthz</code><span>Health check for the CADForge Space.</span></div>
+        <div class="api-row"><code>POST /api/space/repair-loop</code><span>Runs the demo loop: weak seed, repaired CAD, CadQuery build, reward JSON, and STL artifact URLs.</span></div>
+        <div class="api-row"><code>POST /api/space/demo</code><span>Scores a known buildable candidate and returns reward dimensions plus artifact paths.</span></div>
+        <div class="api-row"><code>GET /api/space/loop-stl/{task_id}</code><span>Downloads the repaired STL from the most recent repair-loop run.</span></div>
+        <div class="api-row"><code>GET /api/space/loop-stl/{task_id}/{step_id}</code><span>Downloads a specific weak-seed or repaired-step STL for visual comparison.</span></div>
+        <div class="api-row"><code>OpenEnv step route</code><span>The OpenEnv server wraps complete CadQuery Python files as actions and returns observations with reward JSON and verifier notes.</span></div>
+      </div>
     </section>
 
     <section class="band">
