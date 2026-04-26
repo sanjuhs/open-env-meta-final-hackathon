@@ -1,5 +1,9 @@
 # CADForge: Training Tiny Models to Write Buildable CADQuery
 
+Detailed judge-facing blog with screenshots, diagrams, references, and all run interpretation:
+
+[docs/detailed-blog/cadforge-detailed-blog.md](docs/detailed-blog/cadforge-detailed-blog.md)
+
 ## The Problem
 
 LLMs can describe a chair, bracket, hook, or motor stator, but tiny models are still unreliable at producing CAD that an engineer can actually use.
@@ -192,3 +196,25 @@ Detailed plan: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-i
 - Qwen3.5-9B SFT: [sanjuhs/qwen35-9b-cadforge-sft-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-sft-lora)
 - Qwen3.5-9B GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-lora)
 - Qwen3.5-9B strict GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+- Qwen3.5-9B adaptive repair GRPO: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
+
+## Latest Adaptive Repair Run
+
+After strict GRPO, CADForge mined the `320` completion traces and generated a new adaptive repair curriculum. The curriculum found the dominant failure class automatically:
+
+| Failure class | Count |
+|---|---:|
+| syntax closure | `110` |
+| type/value/CAD kernel errors | `47` |
+| disconnected or weak geometry | `26` |
+| undefined names | `20` |
+| invented API | `17` |
+| missing fixture | `15` |
+| unknown build failure | `15` |
+| low editability | `4` |
+
+The adaptive GRPO run was a diagnostic self-improvement round. It uploaded successfully, but did not improve buildability yet: `120` completions, `0` buildable, mostly syntax errors. That is still useful evidence for the environment thesis: CADForge discovered the next bottleneck. The next adaptive round should use shorter repair prompts, force a small complete `fixture` first, and only then add semantic/reference pressure.
+
+![Adaptive repair GRPO reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-20260426-adaptive-repair/grpo_reward_curve.png)
+
+![Adaptive repair error breakdown](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-20260426-adaptive-repair/grpo_error_breakdown.png)

@@ -22,6 +22,7 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 ## Judge-Facing Links
 
 - Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
+- Detailed technical blog: [docs/detailed-blog/cadforge-detailed-blog.md](docs/detailed-blog/cadforge-detailed-blog.md)
 - Training notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
 - Self-improving RLVE design: [docs/brainstorm/21-cadforge-self-improving-rlve.md](docs/brainstorm/21-cadforge-self-improving-rlve.md)
