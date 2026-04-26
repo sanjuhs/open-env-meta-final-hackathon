@@ -29,8 +29,9 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Self-improving RLVE design: [docs/brainstorm/21-cadforge-self-improving-rlve.md](docs/brainstorm/21-cadforge-self-improving-rlve.md)
 - Strict GRPO training report: [training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md)
 - Strict GRPO eval report: [training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md](training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md)
-- Inference comparison: [inference/results/stator-qwen-vs-frontier/report.md](../inference/results/stator-qwen-vs-frontier/report.md)
+- Inference comparison: [inference/results/stator-qwen-vs-frontier/report.md](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/inference/results/stator-qwen-vs-frontier/report.md)
 - Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)
+- Training logs and evidence bundle: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Strict 9B GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
 - Adaptive repair GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
 
@@ -50,7 +51,17 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 
 ![Strict GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
 
-![Base Qwen vs RL-tuned Qwen vs GPT-5.4 stator comparison](../inference/results/stator-qwen-vs-frontier/comparison.png)
+![Base Qwen vs RL-tuned Qwen vs GPT-5.4 stator comparison](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/inference/results/stator-qwen-vs-frontier/comparison.png)
+
+## Training Logs
+
+The raw logs are backed up separately so judges can inspect the training evidence without relying on screenshots:
+
+- Evidence dataset: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+- Compressed archive: `archives/cadforge-training-evidence-20260426.tar.gz`
+- Key JSONL traces: `training/logs/*completions.jsonl`
+
+The logs show the core result: dense GRPO had positive-looking reward but `0%` buildability; strict build-gating produced `96/320` buildable completions; adaptive repair fixed clipped outputs and produced `53/180` buildable repairs.
 
 ## Hackathon Theme Alignment
 
