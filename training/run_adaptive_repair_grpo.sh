@@ -11,6 +11,8 @@ set +a
 WORKSPACE_ROOT="${WORKSPACE_ROOT:-/workspace}"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$WORKSPACE_ROOT/.uv-cache}"
 export HF_HOME="${HF_HOME:-$WORKSPACE_ROOT/.cache/huggingface}"
+export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-$HF_HOME/transformers}"
 export TORCH_HOME="${TORCH_HOME:-$WORKSPACE_ROOT/.cache/torch}"
 export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-$WORKSPACE_ROOT/.cache/triton}"
 export VLLM_CACHE_ROOT="${VLLM_CACHE_ROOT:-$WORKSPACE_ROOT/.cache/vllm}"
@@ -21,7 +23,7 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 export HF_HUB_DISABLE_XET=1
 export TORCH_COMPILE_DISABLE=1
 
-mkdir -p "$TMPDIR" "$TORCHINDUCTOR_CACHE_DIR" training/logs training/output training/reports
+mkdir -p "$TMPDIR" "$UV_CACHE_DIR" "$HF_HOME" "$HUGGINGFACE_HUB_CACHE" "$TRANSFORMERS_CACHE" "$TORCH_HOME" "$TRITON_CACHE_DIR" "$VLLM_CACHE_ROOT" "$TORCHINDUCTOR_CACHE_DIR" training/logs training/output training/reports
 
 RUN="${RUN:-20260426-adaptive-repair}"
 STRICT_RUN="${STRICT_RUN:-20260426-strict-build}"
