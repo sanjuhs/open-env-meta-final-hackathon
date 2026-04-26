@@ -19,12 +19,19 @@ CADForge is an OpenEnv environment for training LLMs to produce **editable, buil
 
 The agent receives a design request, writes a complete CadQuery Python file, and the environment runs real CAD tooling: CadQuery build, STL export, topology checks, semantic scoring, reference similarity, editability scoring, and persistent artifact logging.
 
+## Notebook
+
+- **Open notebook in Hugging Face:** [training/cadforge_openenv_training_colab.ipynb](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/cadforge_openenv_training_colab.ipynb)
+- **Open notebook in Google Colab:** [CADForge OpenEnv training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
+
+**RunPod/H200 clarification:** the full 2B/9B SFT and GRPO runs were executed on RunPod H200 as distinct production scripts. The Colab notebook is the judge-runnable smoke path that validates OpenEnv, the public dataset, the CadQuery reward backend, and tiny SFT/GRPO launches using those same scripts.
+
 ## Judge-Facing Links
 
 - **GitHub repo:** [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon)
 - **GitHub Gist: training scripts:** [CADForge OpenEnv SFT/GRPO scripts](https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb)
 - **Raw training logs and evidence:** [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
-- Training notebook on this HF Space: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
+- Training notebook on this HF Space: [training/cadforge_openenv_training_colab.ipynb](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/cadforge_openenv_training_colab.ipynb)
 - Open the same notebook in Google Colab: [Colab training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
 - Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
 - Detailed technical blog: [docs/detailed-blog/cadforge-detailed-blog.md](docs/detailed-blog/cadforge-detailed-blog.md)
@@ -37,8 +44,6 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Training logs and evidence bundle: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Strict 9B GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
 - Adaptive repair GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
-
-**RunPod/H200 clarification:** the full 2B/9B SFT and GRPO runs were executed on RunPod H200 as distinct production scripts. The Colab notebook is the judge-runnable smoke path that validates OpenEnv, the public dataset, the CadQuery reward backend, and tiny SFT/GRPO launches using those same scripts.
 
 ## Results Snapshot
 
