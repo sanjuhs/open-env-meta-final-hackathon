@@ -463,6 +463,119 @@ It then creates new repair prompts containing:
 
 That is the project-level self-improvement story: OpenENV provides the world, CADForge provides the grader, and the training loop turns failures into the next lesson.
 
+## How Curriculum Generation Works
+
+When we say "generate curriculum," we mean that failed model trajectories become new repair tasks. CADForge does not simply throw away bad completions. It turns each useful failure into a targeted prompt that asks the model to fix one concrete CAD problem and improve the reward delta.
+
+The loop is:
+
+1. The model tries to solve a CAD task during GRPO.
+2. CADForge executes the generated CadQuery file.
+3. The evaluator writes reward JSON, build status, traceback/error text, stdout/stderr tails, generated code, and task metadata into a debug JSONL row.
+4. `training/generate_repair_curriculum.py` reads that debug JSONL.
+5. It classifies the failure into a broad repair bucket.
+6. It writes a new JSONL training prompt that contains the failed code, previous reward, error tail, and a targeted repair policy.
+7. The next GRPO round trains on those generated repair prompts.
+
+So the environment is not static. The same CADForge evaluator remains the world, but the model's failures change the next data distribution.
+
+```mermaid
+flowchart TD
+  A["Current model"] --> B["Generate CadQuery completions"]
+  B --> C["CADForge executes and scores each file"]
+  C --> D["Debug JSONL: code, reward, build flag, errors"]
+  D --> E["Classify failure type"]
+  E --> F["Create targeted repair prompt"]
+  F --> G["New repair curriculum JSONL"]
+  G --> H["Next GRPO/SFT round"]
+  H --> A
+```
+
+### Failure Buckets
+
+The curriculum generator looks for failure patterns that are common in code-CAD:
+
+| Failure bucket | What it means | Repair policy |
+|---|---|---|
+| `syntax_closure` | The file is clipped, has unclosed parentheses, or is invalid Python. | Rewrite a shorter complete file, close all expressions, end with `fixture = fixture.clean()`. |
+| `missing_fixture` | The model made geometry but did not assign the final exportable object. | Combine the parts and assign the final object to `fixture`. |
+| `invented_api` | The model hallucinated a CadQuery method like `.annulus`, `.cone`, or `.sphere`. | Replace fake helpers with conservative primitives: boxes, cylinders, circle/extrude, cuts, unions, translate, rotate. |
+| `undefined_name` | The code references a variable, helper, or dimension that was never defined. | Define every dimension and intermediate before use. |
+| `type_or_value` | CadQuery failed because of a fragile operation, invalid value, selector issue, or boolean failure. | Simplify geometry and use reliable primitive unions/cuts with small overlaps. |
+| `disconnected_or_weak` | The CAD builds, but parts float or the requested object is not recognizable enough. | Add bridges, ribs, bosses, crossbars, overlaps, and semantic subassemblies. |
+| `low_editability` | The CAD builds, but the code is hard to edit or not parameterized. | Add named dimensions, helper functions, and reusable subassemblies. |
+| `unknown_build_failure` | The failure does not match a known class. | Rewrite into a simpler buildable candidate while preserving task intent. |
+
+This is the important design choice: the generator learns broad repair classes, not exact error strings. A new unseen traceback can still become useful data if it maps to a class like `invented_api`, `missing_fixture`, or `type_or_value`.
+
+### What A Generated Repair Task Looks Like
+
+A normal training row might say:
+
+```text
+Task:
+Build a caster wheel fork.
+
+Return a complete executable CadQuery Python file.
+```
+
+A generated repair curriculum row is richer:
+
+```text
+Task:
+Build a caster wheel fork.
+
+Previous candidate failed CADForge verification.
+
+Observation:
+{
+  "failure_type": "invented_api",
+  "previous_reward": {
+    "total": -1.0,
+    "build": 0.0,
+    "topology": 0.0,
+    "contact": 0.0,
+    "semantic_parts": 0.0,
+    "reference_similarity": 0.0,
+    "editability": 0.0
+  },
+  "error_tail": "AttributeError: Workplane object has no attribute annulus"
+}
+
+Adaptive repair policy for this failure:
+- Replace unsupported CadQuery helpers with boxes, cylinders, circle/extrude, cuts, unions, translate, and rotate.
+- If a shape is hard, approximate it with conservative primitives that compile.
+
+Previous CadQuery code excerpt:
+<the model's failed code>
+
+Repair it into a complete executable CadQuery Python file under roughly 120 lines.
+Return only the repaired Python file.
+```
+
+That new prompt is valuable because it teaches an agent to use environment feedback. It is no longer just "write CAD from scratch." It is "given this exact failed CAD attempt, fix the concrete failure and improve the reward."
+
+### How The System Fights Back
+
+CADForge fights back in two ways.
+
+First, the reward gets stricter. In strict-build GRPO, a candidate must build before it can receive dense reward. If `build < 1.0`, the reward is pushed negative, with extra penalties for syntax errors, missing imports, missing `fixture`, `AttributeError`, or `NameError`. This prevents the model from getting comfortable with pretty-looking but non-executable code.
+
+Second, the curriculum changes. If the model keeps forgetting `fixture`, the next curriculum contains more missing-fixture repair prompts. If it keeps inventing APIs, the next curriculum asks it to replace fake CadQuery calls with conservative primitives. If it builds disconnected assemblies, the next prompts ask for bridges, ribs, overlaps, and recognizable subassemblies.
+
+The self-improving shell loop does this repeatedly:
+
+```text
+old GRPO debug failures
+-> generate repair curriculum
+-> train GRPO on that curriculum
+-> write new debug failures
+-> generate the next curriculum
+-> repeat
+```
+
+The environment usually does not create a brand-new simulator each round. The CADForge/OpenENV environment stays mostly the same. What changes is the training distribution: every round is biased toward the model's current weaknesses. That is why the system behaves like a teacher instead of a fixed benchmark.
+
 ## Deployment And Push
 
 Validate the Space package:
