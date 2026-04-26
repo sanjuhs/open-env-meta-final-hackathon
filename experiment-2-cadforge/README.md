@@ -21,9 +21,10 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 
 ## Judge-Facing Links
 
+- Training notebook on this HF Space: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
+- Open the same notebook in Google Colab: [Colab training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
 - Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
 - Detailed technical blog: [docs/detailed-blog/cadforge-detailed-blog.md](docs/detailed-blog/cadforge-detailed-blog.md)
-- Training notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
 - Self-improving RLVE design: [docs/brainstorm/21-cadforge-self-improving-rlve.md](docs/brainstorm/21-cadforge-self-improving-rlve.md)
 - Strict GRPO training report: [training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md)

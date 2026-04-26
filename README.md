@@ -7,8 +7,10 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 ## Submission Links
 
 - Hugging Face Space: [sanjuhs/cadforge-cadquery-openenv](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv)
+- Training notebook on the HF Space: [training/cadforge_openenv_training_colab.ipynb](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/cadforge_openenv_training_colab.ipynb)
+- Open the training notebook in Google Colab: [Colab training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
 - Mini-blog markdown: [experiment-2-cadforge/CADFORGE_BLOG.md](experiment-2-cadforge/CADFORGE_BLOG.md)
-- Judge rerun notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
+- Judge rerun notebook in this repo: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
 - Self-improving curriculum: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-improving-curriculum.md)
 - Submission checklist: [docs/cadforge-submission-checklist.md](docs/cadforge-submission-checklist.md)
