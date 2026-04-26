@@ -353,7 +353,7 @@ SPACE_HTML = r'''
           <a class="button" href="https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/CADFORGE_BLOG.md" target="_blank">Read mini-blog</a>
           <a class="button" href="https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/docs/detailed-blog/cadforge-detailed-blog.md" target="_blank">Detailed blog</a>
           <a class="button" href="https://github.com/sanjuhs/open-env-meta-final-hackathon" target="_blank">Training code</a>
-          <a class="button" href="https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md" target="_blank">Script gist bundle</a>
+          <a class="button" href="https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb" target="_blank">Training scripts Gist</a>
           <a class="button" href="https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence" target="_blank">Training logs</a>
         </div>
       </div>
@@ -396,7 +396,7 @@ SPACE_HTML = r'''
       <div class="repro-links">
         <a class="repro-link" href="https://github.com/sanjuhs/open-env-meta-final-hackathon" target="_blank">GitHub repo</a>
         <a class="repro-link" href="https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb" target="_blank">Open Colab notebook</a>
-        <a class="repro-link" href="https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md" target="_blank">Training script bundle</a>
+        <a class="repro-link" href="https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb" target="_blank">Training scripts Gist</a>
         <a class="repro-link" href="https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence" target="_blank">HF logs + evidence</a>
       </div>
     </section>

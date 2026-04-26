@@ -22,7 +22,7 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 ## Judge-Facing Links
 
 - **GitHub repo:** [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon)
-- **Training script bundle / gist-ready source:** [training/GITHUB_GIST_TRAINING_SCRIPTS.md](https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md)
+- **GitHub Gist: training scripts:** [CADForge OpenEnv SFT/GRPO scripts](https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb)
 - **Raw training logs and evidence:** [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Training notebook on this HF Space: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Open the same notebook in Google Colab: [Colab training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)

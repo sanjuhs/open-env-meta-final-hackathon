@@ -11,7 +11,7 @@ CADForge is an OpenEnv reinforcement-learning environment for code-CAD. The agen
 | GitHub repo | [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon) |
 | Google Colab smoke notebook | [cadforge_openenv_training_colab.ipynb](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb) |
 | HF Space | [sanjuhs/cadforge-cadquery-openenv](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv) |
-| Training script bundle / gist-ready source | [training/GITHUB_GIST_TRAINING_SCRIPTS.md](https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md) |
+| GitHub Gist: training scripts | [CADForge OpenEnv SFT/GRPO scripts](https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb) |
 | Raw logs and evidence archive | [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence) |
 
 The full SFT and GRPO runs were executed on a RunPod H200 through distinct production scripts. The Colab notebook is the public judge-runnable smoke path: it validates OpenEnv, loads the public dataset, runs the CadQuery reward backend, and launches tiny SFT/GRPO checks using the same source files.

@@ -1,6 +1,8 @@
 # CADForge Training Scripts Bundle
 
-This is the gist-ready source bundle for the CADForge OpenEnv submission.
+This is the source bundle mirrored into the public CADForge OpenEnv training-script Gist:
+
+https://gist.github.com/sanjuhs/10596f688e8b4560910a3b1b137bfeeb
 
 **Main GitHub repo:** https://github.com/sanjuhs/open-env-meta-final-hackathon  
 **HF Space:** https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv  
@@ -42,9 +44,9 @@ The production run used shell wrappers so each stage could run in the right Pyth
 - Strict GRPO eval report: https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md
 - Detailed technical blog: https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/docs/detailed-blog/cadforge-detailed-blog.md
 
-## Optional: Create the GitHub Gist
+## Recreate or Update the GitHub Gist
 
-After authenticating GitHub CLI with gist permission:
+After authenticating GitHub CLI with gist permission, this is the command used to create the public Gist:
 
 ```bash
 gh auth login --scopes gist,repo
