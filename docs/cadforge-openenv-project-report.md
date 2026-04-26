@@ -63,7 +63,7 @@ SFT worked clearly. Both Qwen3.5 models learned the shape of editable CADQuery p
 | Qwen3.5-2B SFT | `1.4480 -> 0.1658` | `0.4477 -> 0.2676` | Learned prompt-to-CAD and repair format |
 | Qwen3.5-9B SFT | `2.6020 -> 0.1413` | `0.3650 -> 0.2398` | Stronger syntax/style learning |
 
-![Qwen3.5-9B SFT loss](../training/reports/qwen35-9b-sft-final/sft_loss_curve.png)
+![Qwen3.5-9B SFT loss](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-sft-final/sft_loss_curve.png)
 
 ### Act 3: First GRPO Run, Too Much Reward Too Soon
 
@@ -76,7 +76,11 @@ That produced positive reward movement:
 | Qwen3.5-2B GRPO | `0.3387` | `0.5303` | `+0.000887 / step` |
 | Qwen3.5-9B GRPO | `0.4355` | `0.6828` | `+0.000475 / step` |
 
-![Qwen3.5-9B GRPO reward](../training/reports/qwen35-9b-grpo-final/grpo_reward_curve.png)
+![Qwen3.5-2B GRPO reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-2b-grpo-final/grpo_reward_curve.png)
+
+The 2B GRPO run is not the headline result, but it is important evidence. It proved that the tiny model could receive a real CADForge reward signal and move in the right direction. Its weakness was diagnostic: because the dense reward was too generous, the model could improve style and partial structure without reliably crossing the buildability gate.
+
+![Qwen3.5-9B GRPO reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-final/grpo_reward_curve.png)
 
 But training exposed an environment bug in the reward design: the reward was still too forgiving when CadQuery execution failed. The model learned structure and editability signals, but too many completions still failed the real build gate.
 
@@ -176,19 +180,29 @@ This is the important lesson from the first GRPO run: **dense rewards are useful
 
 The 2B model learned the basic grammar of CADForge traces. It moved from broad, uncertain outputs to compact CadQuery-style responses.
 
-![2B SFT loss](../training/reports/qwen35-2b-sft-final/sft_loss_curve.png)
+![2B SFT loss](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-2b-sft-final/sft_loss_curve.png)
+
+### Run 1.5: Qwen3.5-2B Dense GRPO
+
+The 2B GRPO run was intentionally included as the small-model learning probe. It reached mean reward `0.3387`, best reward `0.5303`, and a positive trend of `+0.000887 / step`.
+
+That result is useful but incomplete. It shows the small model can respond to CADForge reward, but it also exposed the flaw that dense reward allowed too much credit for non-buildable programs. We used that failure to redesign the environment into strict build-gated GRPO.
+
+![2B dense GRPO reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-2b-grpo-final/grpo_reward_curve.png)
+
+![2B dense GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-2b-grpo-final/grpo_code_health.png)
 
 ### Run 2: Qwen3.5-9B SFT
 
 The 9B model learned faster and reached better eval loss than 2B.
 
-![9B SFT loss](../training/reports/qwen35-9b-sft-final/sft_loss_curve.png)
+![9B SFT loss](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-sft-final/sft_loss_curve.png)
 
 ### Run 3: Dense GRPO
 
 Dense GRPO improved reward, but still allowed too many non-buildable completions. This run exposed the reward-design flaw.
 
-![9B dense GRPO code health](../training/reports/qwen35-9b-grpo-final/grpo_code_health.png)
+![9B dense GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-final/grpo_code_health.png)
 
 ### Run 4: Strict Build-Gated GRPO
 
@@ -203,9 +217,9 @@ Completed result:
 - best CADForge total score: `0.9352`
 - mean per-step reward trend: `+0.003549 / step`
 
-![Strict 9B GRPO reward](../training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
+![Strict 9B GRPO reward](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
 
-![Strict 9B GRPO code health](../training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
+![Strict 9B GRPO code health](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/resolve/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
 
 The remaining failures are useful curriculum targets:
 
