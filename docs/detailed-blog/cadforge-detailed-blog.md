@@ -4,6 +4,18 @@
 
 CADForge is an OpenEnv reinforcement-learning environment for code-CAD. The agent receives a design request, writes a complete CadQuery Python file, runs it through a real CadQuery/STL/reward backend, sees structured feedback, and learns to repair the model over repeated attempts.
 
+## Judge Reproducibility Links
+
+| Artifact | Link |
+|---|---|
+| GitHub repo | [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon) |
+| Google Colab smoke notebook | [cadforge_openenv_training_colab.ipynb](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb) |
+| HF Space | [sanjuhs/cadforge-cadquery-openenv](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv) |
+| Training script bundle / gist-ready source | [training/GITHUB_GIST_TRAINING_SCRIPTS.md](https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md) |
+| Raw logs and evidence archive | [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence) |
+
+The full SFT and GRPO runs were executed on a RunPod H200 through distinct production scripts. The Colab notebook is the public judge-runnable smoke path: it validates OpenEnv, loads the public dataset, runs the CadQuery reward backend, and launches tiny SFT/GRPO checks using the same source files.
+
 The important distinction is this:
 
 | Mesh generation | Code-CAD generation |
@@ -104,6 +116,8 @@ flowchart TD
   G --> H
   H --> B
 ```
+
+![Rendered CADForge environment loop](./rendered-assets/environment-loop-rendered.png)
 
 Every episode can write:
 
@@ -234,6 +248,8 @@ flowchart TD
   J --> A
 ```
 
+![Rendered adaptive repair curriculum loop](./rendered-assets/adaptive-repair-loop-rendered.png)
+
 This is the environment "fighting back." If the model keeps clipping code before `fixture`, the next batch includes more syntax-closure repairs. If it invents APIs, the next batch asks it to rewrite using conservative primitives. If it builds but misses semantics, the next batch asks for named subassemblies and recognizable features.
 
 The adaptive curriculum generator produced a 180-row repair set from 320 strict GRPO rollouts. It found:
@@ -273,6 +289,8 @@ flowchart LR
   H --> K["Next model"]
   J --> K
 ```
+
+![Rendered prompt-image-GLB reference loop](./rendered-assets/reference-generation-loop-rendered.png)
 
 This is the scalable route. A human does not need to hand-design every CAD target. The pipeline can generate many task prompts, create reference images, turn them into GLBs, extract similarity signals, and train models to write editable CadQuery that approximates the object.
 
@@ -510,6 +528,9 @@ All must-have visuals are now present locally in `docs/detailed-blog/rendered-as
 | GLB reference beside generated CadQuery render | present |
 | compact build-rate chart | present |
 | adaptive curriculum failure-class chart | present |
+| rendered environment loop diagram | present |
+| rendered adaptive repair loop diagram | present |
+| rendered prompt-image-GLB loop diagram | present |
 | self-improvement loop summary | present |
 
 The only additional images that would make the case stronger are:

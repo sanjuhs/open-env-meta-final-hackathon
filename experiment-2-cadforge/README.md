@@ -21,6 +21,9 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 
 ## Judge-Facing Links
 
+- **GitHub repo:** [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon)
+- **Training script bundle / gist-ready source:** [training/GITHUB_GIST_TRAINING_SCRIPTS.md](https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md)
+- **Raw training logs and evidence:** [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Training notebook on this HF Space: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Open the same notebook in Google Colab: [Colab training notebook](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
 - Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
@@ -34,6 +37,8 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Training logs and evidence bundle: [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
 - Strict 9B GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
 - Adaptive repair GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-adaptive-repair-lora)
+
+**RunPod/H200 clarification:** the full 2B/9B SFT and GRPO runs were executed on RunPod H200 as distinct production scripts. The Colab notebook is the judge-runnable smoke path that validates OpenEnv, the public dataset, the CadQuery reward backend, and tiny SFT/GRPO launches using those same scripts.
 
 ## Results Snapshot
 

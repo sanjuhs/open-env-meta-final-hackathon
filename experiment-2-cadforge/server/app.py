@@ -259,6 +259,43 @@ SPACE_HTML = r'''
       .band { padding: 36px 34px; }
       .band h2 { font-size: 34px; margin: 0 0 12px; color: #142532; }
       .band p { color: #526170; line-height: 1.55; }
+      .repro-banner {
+        margin: 0;
+        padding: 28px 34px;
+        background: #eef8ff;
+        border-top: 4px solid #164f73;
+        border-bottom: 4px solid #164f73;
+        color: #102633;
+      }
+      .repro-banner h2 {
+        margin: 0 0 12px;
+        font-size: clamp(30px, 4vw, 52px);
+        color: #102633;
+      }
+      .repro-banner p {
+        max-width: 1180px;
+        margin: 0 0 16px;
+        color: #304b5e;
+        font-size: 20px;
+        line-height: 1.45;
+      }
+      .repro-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .repro-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        border: 1px solid #164f73;
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: #ffffff;
+        color: #0d3446;
+        font-weight: 900;
+        text-decoration: none;
+      }
       .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
       .card {
         border: 1px solid #dbe4ea;
@@ -314,7 +351,10 @@ SPACE_HTML = r'''
         <div class="actions">
           <a class="button primary" href="#demo">Run CAD demo</a>
           <a class="button" href="https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/CADFORGE_BLOG.md" target="_blank">Read mini-blog</a>
+          <a class="button" href="https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/docs/detailed-blog/cadforge-detailed-blog.md" target="_blank">Detailed blog</a>
           <a class="button" href="https://github.com/sanjuhs/open-env-meta-final-hackathon" target="_blank">Training code</a>
+          <a class="button" href="https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md" target="_blank">Script gist bundle</a>
+          <a class="button" href="https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence" target="_blank">Training logs</a>
         </div>
       </div>
       <div class="viewer-panel" id="demo">
@@ -347,6 +387,17 @@ SPACE_HTML = r'''
           <div class="metric"><span>editability</span><strong id="editMetric">--</strong></div>
           <div class="metric"><span>semantic</span><strong id="semanticMetric">--</strong></div>
         </div>
+      </div>
+    </section>
+
+    <section class="repro-banner">
+      <h2>Judge rerun links</h2>
+      <p>The full CADForge SFT and GRPO runs were executed on a RunPod H200 as distinct production scripts. The Colab notebook is the public smoke path: it validates OpenEnv, loads the public dataset, runs the real CadQuery reward backend, and launches tiny SFT/GRPO checks with the same source files.</p>
+      <div class="repro-links">
+        <a class="repro-link" href="https://github.com/sanjuhs/open-env-meta-final-hackathon" target="_blank">GitHub repo</a>
+        <a class="repro-link" href="https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb" target="_blank">Open Colab notebook</a>
+        <a class="repro-link" href="https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md" target="_blank">Training script bundle</a>
+        <a class="repro-link" href="https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence" target="_blank">HF logs + evidence</a>
       </div>
     </section>
 

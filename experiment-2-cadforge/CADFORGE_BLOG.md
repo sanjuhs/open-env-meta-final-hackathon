@@ -4,6 +4,15 @@ Detailed judge-facing blog with screenshots, diagrams, references, and all run i
 
 [docs/detailed-blog/cadforge-detailed-blog.md](docs/detailed-blog/cadforge-detailed-blog.md)
 
+## Judge Reproducibility Links
+
+- **GitHub repo:** [sanjuhs/open-env-meta-final-hackathon](https://github.com/sanjuhs/open-env-meta-final-hackathon)
+- **Training script bundle / gist-ready source:** [training/GITHUB_GIST_TRAINING_SCRIPTS.md](https://github.com/sanjuhs/open-env-meta-final-hackathon/blob/main/training/GITHUB_GIST_TRAINING_SCRIPTS.md)
+- **Google Colab smoke notebook:** [cadforge_openenv_training_colab.ipynb](https://colab.research.google.com/github/sanjuhs/open-env-meta-final-hackathon/blob/main/training/cadforge_openenv_training_colab.ipynb)
+- **Raw training logs and evidence:** [sanjuhs/cadforge-training-evidence](https://huggingface.co/datasets/sanjuhs/cadforge-training-evidence)
+
+The full SFT and GRPO runs were executed on a RunPod H200 through distinct production scripts. The Colab notebook is the public judge-runnable smoke path that validates the same OpenEnv, dataset, reward backend, and training entry points on a tiny run.
+
 ## The Problem
 
 LLMs can describe a chair, bracket, hook, or motor stator, but tiny models are still unreliable at producing CAD that an engineer can actually use.

@@ -7,6 +7,8 @@ import { renderScadToGroup } from "./scadRenderer.js";
 
 const app = document.querySelector("#app");
 const route = window.location.pathname;
+const detailedBlogUrl =
+  "https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/docs/detailed-blog/cadforge-detailed-blog.md";
 const isLandingPage = route === "/" || route === "/index.html";
 const isCadQueryGeneratorPage = route === "/cadquery";
 const isCadQueryRendererPage = route === "/cadquery-renderer";
@@ -41,6 +43,11 @@ app.innerHTML = `
           <strong>Reward environment</strong>
           <small>Generate, revise, render, and score Markus-chair CadQuery candidates against the ideal code and GLB reference.</small>
         </a>
+        <a class="route-card" href="${detailedBlogUrl}" target="_blank" rel="noreferrer">
+          <span>Submission</span>
+          <strong>Detailed blog</strong>
+          <small>Read the full hackathon story: frontier model failures, reward design, SFT/GRPO evidence, and self-improvement loops.</small>
+        </a>
       </div>
     </section>
   </main>
@@ -53,6 +60,7 @@ app.innerHTML = `
         <a class="${isCadQueryGeneratorPage ? "active" : ""}" href="/cadquery">CadQuery</a>
         <a class="${isCadQueryRendererPage ? "active" : ""}" href="/cadquery-renderer">Renderer</a>
         <a class="${isCadQueryEnvPage ? "active" : ""}" href="/cadquery-env">Env</a>
+        <a href="${detailedBlogUrl}" target="_blank" rel="noreferrer">Detailed Blog</a>
       </nav>
       <div>
         <p class="eyebrow">CADForge Experiment 2</p>
