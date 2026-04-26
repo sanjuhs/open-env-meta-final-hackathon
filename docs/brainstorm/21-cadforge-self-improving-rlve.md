@@ -47,6 +47,97 @@ flowchart TD
   K --> A
 ```
 
+## How A Repair Prompt Is Created
+
+The next SFT/GRPO prompt is not just the same object request repeated again. It is the same task plus a different failed state.
+
+A normal prompt-to-CAD row looks like this:
+
+```text
+User:
+Build a 12-slot axial motor stator.
+
+Assistant:
+<complete good CadQuery code>
+```
+
+A repair row looks like this:
+
+```text
+User:
+Task:
+Build a 12-slot axial motor stator.
+
+Previous candidate failed CADForge verification.
+
+Observation:
+{
+  "failure_type": "invented_api",
+  "previous_reward": {
+    "total": -1.0,
+    "build": 0.0
+  },
+  "error_tail": "AttributeError: Workplane object has no attribute annulus"
+}
+
+Adaptive repair policy:
+- replace unsupported CadQuery helpers with conservative primitives
+- use circle/extrude, cut, union, translate, rotate
+- assign the final exportable object to fixture
+
+Previous CadQuery code:
+<the model's failed code>
+
+Repair it into a complete executable CadQuery Python file.
+Return only the repaired Python file.
+```
+
+So the object may be the same, but the question is different because the state is different:
+
+- different failed code
+- different reward JSON
+- different traceback
+- different failure class
+- different repair policy
+- different task weighting based on what the model is currently bad at
+
+## What If The Error Is New?
+
+The model will absolutely produce errors that are not identical to the examples in the dataset. CADForge handles this by learning broad repair classes, not exact error strings.
+
+```mermaid
+flowchart TD
+  A["New bad CadQuery code"] --> B["Run CadQuery compiler/export"]
+  B --> C["Capture traceback + reward JSON + geometry symptoms"]
+  C --> D["Classify into broad failure bucket"]
+  D --> E["Write a repair prompt with code + observation + policy"]
+  E --> F["Model proposes one or more repairs"]
+  F --> G["CADForge rebuilds and rescoring decides what improved"]
+  G --> H["Successful repairs become SFT examples"]
+  G --> I["Failed repairs become next GRPO curriculum"]
+```
+
+The buckets are intentionally general:
+
+| New unseen issue | Failure bucket | Repair instruction |
+|---|---|---|
+| `AttributeError: Workplane has no method twistExtrude` | invented API | replace with conservative primitives |
+| `BRep_API: command not done` | fragile CAD operation | simplify boolean/loft/sweep into boxes/cylinders/cuts |
+| code stops mid-union | syntax closure | write a shorter complete file and close all expressions |
+| no object exported | missing fixture | assign final model to `fixture` |
+| builds but no requested parts | weak semantics | add recognizable named subassemblies |
+| parts are floating | disconnected geometry | add bridges, overlaps, ribs, bosses, or root blocks |
+| no clear match | unknown build failure | rewrite as a simpler buildable model while preserving task intent |
+
+This means SFT does not need to cover every possible CadQuery error. SFT teaches the model the repair format and common patterns. GRPO teaches it which repairs actually work because the environment executes and scores every candidate.
+
+In short:
+
+```text
+SFT teaches: "When you see failure feedback, answer with a repaired complete CAD file."
+GRPO teaches: "Among many possible repairs, prefer the one that actually builds and scores higher."
+```
+
 ## Why This Is Self-Improvement
 
 The environment changes the distribution of future work based on observed failures:
