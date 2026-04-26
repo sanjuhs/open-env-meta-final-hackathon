@@ -24,6 +24,7 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
 - Training notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
+- Self-improving RLVE design: [docs/brainstorm/21-cadforge-self-improving-rlve.md](docs/brainstorm/21-cadforge-self-improving-rlve.md)
 - Strict GRPO training report: [training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md](https://huggingface.co/spaces/sanjuhs/cadforge-cadquery-openenv/blob/main/training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md)
 - Strict GRPO eval report: [training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md](training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md)
 - Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)

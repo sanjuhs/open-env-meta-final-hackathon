@@ -29,11 +29,11 @@ DEMO_TASKS = {
         "broken_code": r'''
 import cadquery as cq
 
-# Broken seed: plausible text, but the assembly never closes.
-plate = cq.Workplane("XY").box(44, 44, 4)
-stem = cq.Workplane("XY").cylinder(16, 5).translate((0, 0, 10))
-fork = cq.Workplane("XY").box(32, 18, 24).translate((0, 0, 20))
-fixture = plate.union(stem).union(
+# Weak seed: buildable, but it is missing wheel, axle, holes, and a real fork.
+plate = cq.Workplane("XY").box(44, 44, 4).translate((0, 0, 2))
+stem = cq.Workplane("XY").cylinder(14, 5).translate((0, 0, 11))
+stub = cq.Workplane("XY").box(24, 16, 12).translate((0, 0, 24))
+fixture = plate.union(stem).union(stub).clean()
 '''.strip(),
         "code": r'''
 import cadquery as cq
@@ -84,40 +84,60 @@ fixture = plate.union(stem).union(fork).union(wheel).union(axle).clean()
         "broken_code": r'''
 import cadquery as cq
 
-# Broken seed: it uses a plausible but unsupported helper and never makes fixture.
-outer_radius = 60
-inner_radius = 24
-ring = cq.Workplane("XY").annulus(inner_radius, outer_radius).extrude(8)
+# Weak seed: buildable disk with a center bore, but no teeth or slot structure.
+outer_radius = 60.0
+shaft_radius = 12.0
+thickness = 8.0
+disk = cq.Workplane("XY").circle(outer_radius).extrude(thickness)
+bore = cq.Workplane("XY").circle(shaft_radius).extrude(thickness + 2).translate((0, 0, -1))
+fixture = disk.cut(bore).clean()
 '''.strip(),
         "code": r'''
 import cadquery as cq
 
-slot_count = 12
-outer_radius = 60.0
-inner_radius = 24.0
-shaft_radius = 11.0
-thickness = 8.0
-tooth_length = 24.0
-tooth_width = 10.0
+# Editable axial motor stator concept with twelve radial teeth and center bore.
+stator_slot_count = 12
+stator_outer_radius = 60.0
+stator_inner_radius = 24.0
+stator_shaft_radius = 11.0
+stator_thickness = 8.0
+radial_tooth_length = 28.0
+radial_tooth_width = 10.0
+back_iron_width = stator_outer_radius - stator_inner_radius
 
-ring = cq.Workplane("XY").circle(outer_radius).extrude(thickness).cut(
-    cq.Workplane("XY").circle(inner_radius).extrude(thickness + 2).translate((0, 0, -1))
-)
+def make_stator_ring():
+    outer = cq.Workplane("XY").circle(stator_outer_radius).extrude(stator_thickness)
+    inner_cut = cq.Workplane("XY").circle(stator_inner_radius).extrude(stator_thickness + 2).translate((0, 0, -1))
+    return outer.cut(inner_cut)
 
-teeth = None
-for index in range(slot_count):
-    angle = 360.0 * index / slot_count
+def make_radial_tooth(index):
+    angle = 360.0 * index / stator_slot_count
+    tooth_center = stator_inner_radius + radial_tooth_length / 2.0
     tooth = (
         cq.Workplane("XY")
-        .center(inner_radius + tooth_length / 2, 0)
-        .rect(tooth_length, tooth_width)
-        .extrude(thickness)
-        .rotate((0, 0, 0), (0, 0, 1), angle)
+        .center(tooth_center, 0)
+        .rect(radial_tooth_length, radial_tooth_width)
+        .extrude(stator_thickness + 1.0)
     )
-    teeth = tooth if teeth is None else teeth.union(tooth)
+    root_pad = (
+        cq.Workplane("XY")
+        .center(stator_inner_radius + 2.0, 0)
+        .rect(8.0, radial_tooth_width + 4.0)
+        .extrude(stator_thickness + 1.0)
+    )
+    return tooth.union(root_pad).rotate((0, 0, 0), (0, 0, 1), angle)
 
-shaft_hole = cq.Workplane("XY").circle(shaft_radius).extrude(thickness + 2).translate((0, 0, -1))
-fixture = ring.union(teeth).cut(shaft_hole).clean()
+def make_twelve_slot_tooth_set():
+    teeth = None
+    for tooth_index in range(stator_slot_count):
+        radial_tooth = make_radial_tooth(tooth_index)
+        teeth = radial_tooth if teeth is None else teeth.union(radial_tooth)
+    return teeth
+
+stator_ring = make_stator_ring()
+twelve_radial_teeth = make_twelve_slot_tooth_set()
+center_shaft_opening = cq.Workplane("XY").circle(stator_shaft_radius).extrude(stator_thickness + 4).translate((0, 0, -2))
+fixture = stator_ring.union(twelve_radial_teeth).cut(center_shaft_opening).clean()
 '''.strip(),
     },
 }
@@ -280,7 +300,7 @@ SPACE_HTML = r'''
         <div class="viewer-head">
           <div>
             <h2 id="viewerTitle">Buildable CAD preview</h2>
-            <p id="viewerStatus">Choose a task. CADForge will run a broken seed, diagnose it, repair it, verify it, and render the final STL.</p>
+            <p id="viewerStatus">Choose a task. CADForge will score a weak seed, repair it, verify it, and render the improved STL.</p>
           </div>
           <div class="demo-controls">
             <select id="taskSelect">
@@ -292,7 +312,7 @@ SPACE_HTML = r'''
         </div>
         <div id="viewer"></div>
         <div class="trace-strip" id="traceStrip">
-          <div class="trace-item"><strong>Step 0</strong><span>Waiting for broken seed.</span></div>
+          <div class="trace-item"><strong>Step 0</strong><span>Waiting for weak seed.</span></div>
           <div class="trace-item"><strong>Step 1</strong><span>Waiting for repaired CAD.</span></div>
         </div>
         <div class="viewer-foot">
@@ -359,7 +379,7 @@ SPACE_HTML = r'''
       const viewer = document.querySelector("#viewer");
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xeff4f7);
-      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100000);
       camera.position.set(180, -220, 170);
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -391,16 +411,19 @@ SPACE_HTML = r'''
         box.getSize(size);
         box.getCenter(center);
         const maxDim = Math.max(size.x, size.y, size.z, 1);
+        camera.near = Math.max(0.1, maxDim / 5000);
+        camera.far = Math.max(5000, maxDim * 10);
         camera.position.set(center.x + maxDim * 1.25, center.y - maxDim * 1.55, center.z + maxDim * 1.05);
+        camera.updateProjectionMatrix();
         controls.target.copy(center);
         controls.update();
       }
 
       async function runDemo() {
         const taskId = document.querySelector("#taskSelect").value;
-        document.querySelector("#viewerStatus").textContent = "Running broken seed, repair, CadQuery build, and reward...";
+        document.querySelector("#viewerStatus").textContent = "Running weak seed, repair, CadQuery build, and reward...";
         document.querySelector("#traceStrip").innerHTML = `
-          <div class="trace-item"><strong>Step 0</strong><span>Evaluating broken seed...</span></div>
+          <div class="trace-item"><strong>Step 0</strong><span>Evaluating weak seed...</span></div>
           <div class="trace-item"><strong>Step 1</strong><span>Waiting for repaired CAD...</span></div>
         `;
         const response = await fetch("/api/space/repair-loop", {
@@ -424,13 +447,34 @@ SPACE_HTML = r'''
         document.querySelector("#semanticMetric").textContent = Number(payload.final.reward.semantic_parts || 0).toFixed(3);
         document.querySelector("#rewardJson").textContent = JSON.stringify(payload, null, 2);
 
-        const geometry = await new STLLoader().loadAsync(payload.final.stl_url + "?t=" + Date.now());
-        geometry.computeVertexNormals();
-        if (mesh) scene.remove(mesh);
-        mesh = new THREE.Mesh(
-          geometry,
-          new THREE.MeshStandardMaterial({ color: taskId.includes("stator") ? 0x7f8c8d : 0x3c8dbc, roughness: 0.58, metalness: 0.45 })
+        await renderMeshes(payload, taskId);
+      }
+
+      async function renderMeshes(payload, taskId) {
+        if (mesh) {
+          scene.remove(mesh);
+          mesh = null;
+        }
+        const group = new THREE.Group();
+        const loader = new STLLoader();
+        if (payload.seed && payload.seed.stl_url && payload.steps && payload.steps[0] && payload.steps[0].build > 0) {
+          const seedGeometry = await loader.loadAsync(payload.seed.stl_url + "?t=" + Date.now());
+          seedGeometry.computeVertexNormals();
+          const seedMesh = new THREE.Mesh(
+            seedGeometry,
+            new THREE.MeshStandardMaterial({ color: 0xd65b5b, roughness: 0.72, metalness: 0.20, transparent: true, opacity: 0.24 })
+          );
+          seedMesh.position.x -= 0.015;
+          group.add(seedMesh);
+        }
+        const finalGeometry = await loader.loadAsync(payload.final.stl_url + "?t=" + Date.now());
+        finalGeometry.computeVertexNormals();
+        const finalMesh = new THREE.Mesh(
+          finalGeometry,
+          new THREE.MeshStandardMaterial({ color: taskId.includes("stator") ? 0x2f80ed : 0x2a9d8f, roughness: 0.48, metalness: 0.50 })
         );
+        group.add(finalMesh);
+        mesh = group;
         scene.add(mesh);
         frameObject(mesh);
       }
@@ -586,7 +630,7 @@ async def run_space_repair_loop(request: Request) -> JSONResponse:
     artifact_dir = Path(str(repaired.get("artifacts_dir") or _loop_artifact_dir(task_id, "repaired")))
     stl_path = _stl_path(artifact_dir)
     steps = [
-        _step_payload("broken seed", broken, "CADForge rejects the first attempt and emits failure feedback."),
+        _step_payload("weak seed", broken, "CADForge scores the weak first attempt before repair."),
         _step_payload("repaired CAD", repaired, "The repaired candidate is rebuilt and rescored."),
     ]
     if not repaired.get("ok") or not stl_path.exists():
@@ -611,6 +655,13 @@ async def run_space_repair_loop(request: Request) -> JSONResponse:
             "delta_reward": float(repaired_reward.get("total", 0.0) or 0.0)
             - float(broken_reward.get("total", 0.0) or 0.0),
             "steps": steps,
+            "seed": {
+                "reward": broken_reward,
+                "notes": broken.get("notes", []),
+                "elapsed_ms": broken.get("elapsed_ms", 0),
+                "stl_url": f"/api/space/loop-stl/{task_id}/broken",
+                "artifacts_dir": broken.get("artifacts_dir"),
+            },
             "final": {
                 "reward": repaired_reward,
                 "notes": repaired.get("notes", []),
@@ -639,6 +690,16 @@ def get_space_loop_stl(task_id: str) -> FileResponse:
     if not stl_path.exists():
         raise HTTPException(status_code=404, detail="Run the repair loop first.")
     return FileResponse(stl_path, media_type="model/stl", filename=f"{safe_task}-repaired.stl")
+
+
+@app.get("/api/space/loop-stl/{task_id}/{step_id}")
+def get_space_loop_step_stl(task_id: str, step_id: str) -> FileResponse:
+    safe_task = _safe_task_id(task_id)
+    safe_step = _safe_task_id(step_id)
+    stl_path = _stl_path(_loop_artifact_dir(safe_task, safe_step))
+    if not stl_path.exists():
+        raise HTTPException(status_code=404, detail="Run the repair loop first.")
+    return FileResponse(stl_path, media_type="model/stl", filename=f"{safe_task}-{safe_step}.stl")
 
 
 def main(host: str = "0.0.0.0", port: int = 8000) -> None:
