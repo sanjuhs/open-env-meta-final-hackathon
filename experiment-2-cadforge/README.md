@@ -15,6 +15,55 @@ tags:
 
 # CADForge Experiment 2
 
+CADForge is an OpenEnv environment for training LLMs to produce **editable, buildable CadQuery CAD**.
+
+The agent receives a design request, writes a complete CadQuery Python file, and the environment runs real CAD tooling: CadQuery build, STL export, topology checks, semantic scoring, reference similarity, editability scoring, and persistent artifact logging.
+
+## Judge-Facing Links
+
+- Mini-blog: [CADFORGE_BLOG.md](CADFORGE_BLOG.md)
+- Training notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
+- Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
+- Strict GRPO training report: [training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md](training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/training_curve_report.md)
+- Strict GRPO eval report: [training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md](training/eval/qwen35-9b-cadforge-grpo-strict-build-20260426-strict-build/eval_report.md)
+- Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)
+- Strict 9B GRPO LoRA: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
+
+## Results Snapshot
+
+| Run | Result |
+|---|---|
+| Qwen3.5-2B SFT | train loss `1.4480 -> 0.1658`, eval loss `0.4477 -> 0.2676` |
+| Qwen3.5-9B SFT | train loss `2.6020 -> 0.1413`, eval loss `0.3650 -> 0.2398` |
+| Qwen3.5-9B strict GRPO | `320` completions, `96` buildable, best CADForge score `0.9352` |
+| Strict 9B quick eval | `2/3` held-out prompts built successfully |
+
+![Strict GRPO reward curve](training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_reward_curve.png)
+
+![Strict GRPO code health](training/reports/qwen35-9b-grpo-strict-build-20260426-strict-build/grpo_code_health.png)
+
+## Hackathon Theme Alignment
+
+- **Theme 2: Long-horizon planning**: CAD improves through repeated code edits and reward feedback.
+- **Theme 3.1: Professional world modeling**: the agent must use real CadQuery tools and survive compiler/export/mesh checks.
+- **Theme 4: Self-improvement**: environment failures become new curriculum. The strict build-gated reward was created because the first dense reward was too forgiving.
+- **Theme 5: Wild Card**: editable CAD generation is a practical, underexplored RLVE target.
+
+## The Environment Fights Back
+
+The first dense GRPO reward gave useful shape feedback, but it still rewarded some non-buildable CAD. CADForge responded by tightening the rules:
+
+1. Buildability became the first gate.
+2. failed CadQuery code receives negative reward.
+3. syntax errors, missing `fixture`, undefined variables, and invented APIs are tracked separately.
+4. successful builds unlock dense rewards for topology, semantics, reference similarity, contact, editability, and efficiency.
+
+This produced useful GRPO variance: buildable CAD separated from pretty-but-broken code.
+
+---
+
+Legacy prototype notes follow.
+
 Local prototype for a multi-step CADForge environment: prompt -> CSG/CAD actions -> geometry validation -> structural household part scoring.
 
 Experiment 1 focuses on prompt-to-mechanical-design plus coarse 3D FEA. Experiment 2 keeps that renderer/verifier base, but reframes the loop around reliable code-CAD behavior:

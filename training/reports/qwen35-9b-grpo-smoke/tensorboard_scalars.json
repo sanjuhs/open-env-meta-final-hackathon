@@ -1,0 +1,318 @@
+{
+  "train/loss": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.5955946
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5139685
+    }
+  ],
+  "train/grad_norm": [
+    {
+      "step": 1.0,
+      "value": 0.6958544850349426,
+      "wall_time": 1777153814.595738
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.514002
+    }
+  ],
+  "train/learning_rate": [
+    {
+      "step": 1.0,
+      "value": 4.999999873689376e-06,
+      "wall_time": 1777153814.5957646
+    },
+    {
+      "step": 2.0,
+      "value": 2.499999936844688e-06,
+      "wall_time": 1777153910.514012
+    }
+  ],
+  "train/num_tokens": [
+    {
+      "step": 1.0,
+      "value": 4600.0,
+      "wall_time": 1777153814.595782
+    },
+    {
+      "step": 2.0,
+      "value": 9098.0,
+      "wall_time": 1777153910.5140212
+    }
+  ],
+  "train/completions/mean_length": [
+    {
+      "step": 1.0,
+      "value": 2048.0,
+      "wall_time": 1777153814.5957973
+    },
+    {
+      "step": 2.0,
+      "value": 2048.0,
+      "wall_time": 1777153910.5140276
+    }
+  ],
+  "train/completions/min_length": [
+    {
+      "step": 1.0,
+      "value": 2048.0,
+      "wall_time": 1777153814.59581
+    },
+    {
+      "step": 2.0,
+      "value": 2048.0,
+      "wall_time": 1777153910.514034
+    }
+  ],
+  "train/completions/max_length": [
+    {
+      "step": 1.0,
+      "value": 2048.0,
+      "wall_time": 1777153814.5958219
+    },
+    {
+      "step": 2.0,
+      "value": 2048.0,
+      "wall_time": 1777153910.5140395
+    }
+  ],
+  "train/completions/clipped_ratio": [
+    {
+      "step": 1.0,
+      "value": 1.0,
+      "wall_time": 1777153814.5958333
+    },
+    {
+      "step": 2.0,
+      "value": 1.0,
+      "wall_time": 1777153910.5140455
+    }
+  ],
+  "train/completions/mean_terminated_length": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.5958457
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.514051
+    }
+  ],
+  "train/completions/min_terminated_length": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.5958648
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5140567
+    }
+  ],
+  "train/completions/max_terminated_length": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.5958765
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5140622
+    }
+  ],
+  "train/rewards/reward_func/mean": [
+    {
+      "step": 1.0,
+      "value": 0.25,
+      "wall_time": 1777153814.5962524
+    },
+    {
+      "step": 2.0,
+      "value": 0.2199999988079071,
+      "wall_time": 1777153910.5142627
+    }
+  ],
+  "train/rewards/reward_func/std": [
+    {
+      "step": 1.0,
+      "value": 0.04242640733718872,
+      "wall_time": 1777153814.6000056
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5179076
+    }
+  ],
+  "train/reward": [
+    {
+      "step": 1.0,
+      "value": 0.25,
+      "wall_time": 1777153814.6027336
+    },
+    {
+      "step": 2.0,
+      "value": 0.2199999988079071,
+      "wall_time": 1777153910.5208135
+    }
+  ],
+  "train/reward_std": [
+    {
+      "step": 1.0,
+      "value": 0.04242640733718872,
+      "wall_time": 1777153814.605745
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5241022
+    }
+  ],
+  "train/frac_reward_zero_std": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.6085558
+    },
+    {
+      "step": 2.0,
+      "value": 1.0,
+      "wall_time": 1777153910.5270147
+    }
+  ],
+  "train/entropy": [
+    {
+      "step": 1.0,
+      "value": 0.2893671989440918,
+      "wall_time": 1777153814.6111474
+    },
+    {
+      "step": 2.0,
+      "value": 0.4956364929676056,
+      "wall_time": 1777153910.5298388
+    }
+  ],
+  "train/clip_ratio/low_mean": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.6142108
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5326385
+    }
+  ],
+  "train/clip_ratio/low_min": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.6175642
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5353243
+    }
+  ],
+  "train/clip_ratio/high_mean": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.620225
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.538144
+    }
+  ],
+  "train/clip_ratio/high_max": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.6229317
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.540586
+    }
+  ],
+  "train/clip_ratio/region_mean": [
+    {
+      "step": 1.0,
+      "value": 0.0,
+      "wall_time": 1777153814.625717
+    },
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153910.5429993
+    }
+  ],
+  "train/epoch": [
+    {
+      "step": 1.0,
+      "value": 0.25,
+      "wall_time": 1777153814.628291
+    },
+    {
+      "step": 2.0,
+      "value": 0.5,
+      "wall_time": 1777153910.545196
+    },
+    {
+      "step": 2.0,
+      "value": 0.5,
+      "wall_time": 1777153913.110641
+    }
+  ],
+  "train/train_runtime": [
+    {
+      "step": 2.0,
+      "value": 205.9102020263672,
+      "wall_time": 1777153913.1102815
+    }
+  ],
+  "train/train_samples_per_second": [
+    {
+      "step": 2.0,
+      "value": 0.01899999938905239,
+      "wall_time": 1777153913.1105268
+    }
+  ],
+  "train/train_steps_per_second": [
+    {
+      "step": 2.0,
+      "value": 0.009999999776482582,
+      "wall_time": 1777153913.1105685
+    }
+  ],
+  "train/total_flos": [
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153913.110597
+    }
+  ],
+  "train/train_loss": [
+    {
+      "step": 2.0,
+      "value": 0.0,
+      "wall_time": 1777153913.1106195
+    }
+  ]
+}

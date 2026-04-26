@@ -5,7 +5,8 @@
 #     "unsloth",
 #     "datasets",
 #     "trl==0.22.2",
-#     "transformers==4.57.3",
+#     "transformers>=5.2.0",
+#     "torch>=2.10.0",
 #     "accelerate",
 #     "peft",
 #     "huggingface_hub",
@@ -71,18 +72,34 @@ def ensure_mixed_files(train_path: Path, val_path: Path, cold_start_upsample: in
     )
 
 
-def format_messages(tokenizer: Any, row: dict[str, Any]) -> dict[str, str]:
+def tokenize_messages(tokenizer: Any, row: dict[str, Any], max_seq_length: int) -> dict[str, list[int]]:
     text = tokenizer.apply_chat_template(
         row["messages"],
         tokenize=False,
         add_generation_prompt=False,
     )
-    return {"text": text}
+    encoded = tokenizer(
+        text=text,
+        truncation=True,
+        max_length=max_seq_length,
+        padding=False,
+    )
+    input_ids = encoded["input_ids"]
+    attention_mask = encoded["attention_mask"]
+    if input_ids and isinstance(input_ids[0], list):
+        input_ids = input_ids[0]
+    if attention_mask and isinstance(attention_mask[0], list):
+        attention_mask = attention_mask[0]
+    return {
+        "input_ids": list(input_ids),
+        "attention_mask": list(attention_mask),
+        "labels": list(input_ids),
+    }
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", default="Qwen/Qwen3.5-2B", help="Base HF model id")
+    parser.add_argument("--model", default="unsloth/Qwen3.5-2B", help="Base HF model id")
     parser.add_argument("--train-jsonl", type=Path, default=DEFAULT_TRAIN)
     parser.add_argument("--val-jsonl", type=Path, default=DEFAULT_VAL)
     parser.add_argument("--output-dir", default="outputs/qwen35-2b-cadforge-sft")
@@ -103,6 +120,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--load-in-4bit", action="store_true")
     parser.add_argument("--push-to-hub", action="store_true")
     parser.add_argument("--trackio-project", default="cadforge")
+    parser.add_argument("--enable-trackio", action="store_true")
     parser.add_argument("--run-name", default="qwen35-sft-smoke")
     parser.add_argument("--packing", action="store_true")
     parser.add_argument("--cold-start-upsample", type=int, default=4)
@@ -117,10 +135,13 @@ def main() -> None:
     args = parse_args()
     os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "1")
 
+    import unsloth  # noqa: F401  # Must be imported before TRL/Transformers for patching.
+    from unsloth import FastLanguageModel
+
     import torch
     from datasets import Dataset
+    from transformers import DataCollatorForSeq2Seq
     from trl import SFTConfig, SFTTrainer
-    from unsloth import FastLanguageModel
 
     if not torch.cuda.is_available():
         raise SystemExit("CUDA is required for the Unsloth training script. Run this on the H200 RunPod.")
@@ -157,16 +178,20 @@ def main() -> None:
 
     train_rows = maybe_limit(read_jsonl(train_path), args.limit_train_rows)
     val_rows = maybe_limit(read_jsonl(val_path), args.limit_val_rows)
-    train_dataset = Dataset.from_list([format_messages(tokenizer, row) for row in train_rows])
-    val_dataset = Dataset.from_list([format_messages(tokenizer, row) for row in val_rows]) if val_rows else None
+    train_dataset = Dataset.from_list([tokenize_messages(tokenizer, row, args.max_seq_length) for row in train_rows])
+    val_dataset = Dataset.from_list([tokenize_messages(tokenizer, row, args.max_seq_length) for row in val_rows]) if val_rows else None
 
     max_steps = args.max_steps if args.max_steps > 0 else -1
     num_epochs = args.num_train_epochs if args.num_train_epochs > 0 else 1.0
 
+    report_to = ["tensorboard"]
+    if args.enable_trackio:
+        report_to.insert(0, "trackio")
+
     config = SFTConfig(
         output_dir=args.output_dir,
         max_length=args.max_seq_length,
-        dataset_text_field="text",
+        remove_unused_columns=False,
         packing=args.packing,
         max_steps=max_steps,
         num_train_epochs=num_epochs,
@@ -183,7 +208,7 @@ def main() -> None:
         save_strategy="steps",
         save_steps=args.save_steps,
         save_total_limit=3,
-        report_to=["trackio", "tensorboard"],
+        report_to=report_to,
         project=args.trackio_project,
         run_name=args.run_name,
         push_to_hub=args.push_to_hub,
@@ -195,6 +220,12 @@ def main() -> None:
         processing_class=tokenizer,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
+        data_collator=DataCollatorForSeq2Seq(
+            tokenizer=tokenizer,
+            padding=True,
+            label_pad_token_id=-100,
+            return_tensors="pt",
+        ),
         args=config,
     )
     trainer.train()

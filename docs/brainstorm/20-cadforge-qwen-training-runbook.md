@@ -83,6 +83,18 @@ export HF_TOKEN=...
 export TRACKIO_SPACE_ID=sanjuhs/cadforge-trackio
 ```
 
+Move caches to the workspace volume before installing training packages:
+
+```bash
+export UV_CACHE_DIR=/workspace/.uv-cache
+export HF_HOME=/workspace/.cache/huggingface
+export TORCH_HOME=/workspace/.cache/torch
+export TRITON_CACHE_DIR=/workspace/.cache/triton
+export VLLM_CACHE_ROOT=/workspace/.cache/vllm
+export UV_LINK_MODE=copy
+export HF_HUB_ENABLE_HF_TRANSFER=1
+```
+
 Install the app/runtime dependencies:
 
 ```bash
@@ -99,7 +111,7 @@ Run this first. It should take only a few minutes on the H200.
 
 ```bash
 uv run training/train_sft_unsloth.py \
-  --model Qwen/Qwen3.5-2B \
+  --model unsloth/Qwen3.5-2B \
   --output-dir outputs/qwen35-2b-cadforge-sft-smoke \
   --max-steps 10 \
   --limit-train-rows 32 \
@@ -120,14 +132,21 @@ Success criteria:
 - one checkpoint/output folder is written
 - no chat-template/data-format crash
 
+Qwen3.5 note: the model type is `qwen3_5`, so Transformers must be `>=5.2.0`. If a smoke run says Transformers does not recognize `qwen3_5`, update the training environment and rerun; this is a dependency issue, not a data issue.
+
+Qwen3.5 is a unified vision-language model. For text-only SFT, call the processor with `text=...`; do not pass the chat string positionally. A positional text string can be interpreted as an image input and trigger an image decode error. That error means the processor call is wrong, not that image fine-tuning itself is broken.
+
+Trackio note: smoke tests default to TensorBoard only. Add `--enable-trackio` after `HF_TOKEN` is configured on the pod.
+
 ## SFT Real 2B Run
 
 ```bash
 uv run training/train_sft_unsloth.py \
-  --model Qwen/Qwen3.5-2B \
+  --model unsloth/Qwen3.5-2B \
   --output-dir outputs/qwen35-2b-cadforge-sft \
   --hub-model-id sanjuhs/qwen35-2b-cadforge-sft-lora \
   --push-to-hub \
+  --enable-trackio \
   --max-steps 0 \
   --num-train-epochs 3 \
   --max-seq-length 8192 \
@@ -148,6 +167,43 @@ Watch:
 - generated sample build rate after training
 - whether outputs contain only Python code, not markdown or thinking tags
 
+The first live 2B run launched on 2026-04-25 used the same settings, without `--push-to-hub` and `--enable-trackio` because no HF token was configured in the pod environment yet:
+
+```text
+output: /workspace/open-env-meta-final/outputs/qwen35-2b-cadforge-sft-full-20260425
+log:    /workspace/open-env-meta-final/training/logs/sft-2b-full-20260425.log
+```
+
+Generate the current/final curve images:
+
+```bash
+uv run training/make_training_report.py \
+  --log training/logs/sft-2b-full-20260425.log \
+  --output-dir training/reports/qwen35-2b-sft-final
+```
+
+Evaluate the finished adapter against CADForge:
+
+```bash
+uv run training/evaluate_cadforge_model.py \
+  --base-model unsloth/Qwen3.5-2B \
+  --adapter outputs/qwen35-2b-cadforge-sft-full-20260425 \
+  --eval-jsonl training/output/cadforge_sft_mix_val.jsonl \
+  --output-dir training/eval/qwen35-2b-cadforge-sft-full-20260425 \
+  --limit 24 \
+  --max-new-tokens 2048 \
+  --reward-mode fast \
+  --episode-prefix qwen35-2b-sft-eval
+```
+
+This writes:
+
+- `training/eval/qwen35-2b-cadforge-sft-full-20260425/eval_report.md`
+- `training/eval/qwen35-2b-cadforge-sft-full-20260425/eval_results.jsonl`
+- one generated CadQuery file per eval row
+
+The eval script strips accidental `<think>...</think>` blocks before scoring, but the current SFT data does not contain thinking traces.
+
 ## SFT Real 9B Run
 
 Start this after the 2B path works:
@@ -158,6 +214,7 @@ uv run training/train_sft_unsloth.py \
   --output-dir outputs/qwen35-9b-cadforge-sft \
   --hub-model-id sanjuhs/qwen35-9b-cadforge-sft-lora \
   --push-to-hub \
+  --enable-trackio \
   --max-steps 0 \
   --num-train-epochs 2 \
   --max-seq-length 8192 \
@@ -177,7 +234,7 @@ First use the cheap reward backend. This verifies GRPO wiring without spending t
 
 ```bash
 uv run training/train_grpo_cadforge.py \
-  --model Qwen/Qwen3.5-2B \
+  --model unsloth/Qwen3.5-2B \
   --output-dir outputs/qwen35-2b-cadforge-grpo-smoke \
   --reward-backend cheap \
   --limit-prompts 8 \
@@ -201,7 +258,7 @@ Then use the real CADForge reward in fast mode:
 
 ```bash
 uv run training/train_grpo_cadforge.py \
-  --model Qwen/Qwen3.5-2B \
+  --model unsloth/Qwen3.5-2B \
   --output-dir outputs/qwen35-2b-cadforge-grpo-cadforge-smoke \
   --reward-backend cadforge \
   --cadforge-reward-mode fast \
@@ -215,13 +272,47 @@ uv run training/train_grpo_cadforge.py \
 
 This is slower because every completion is executed as CadQuery, exported to mesh, and scored.
 
+## GRPO From SFT Adapter
+
+After the 2B SFT run finishes and the eval pass is complete, launch GRPO from the trained adapter:
+
+```bash
+training/launch_grpo_after_sft.sh
+```
+
+The launcher defaults to:
+
+```text
+base model:   unsloth/Qwen3.5-2B
+adapter:      outputs/qwen35-2b-cadforge-sft-full-20260425
+output:       outputs/qwen35-2b-cadforge-grpo-from-sft-20260425
+log:          training/logs/grpo-2b-from-sft-20260425.log
+prompts:      64
+steps:        80
+generations:  4
+batch:        4
+grad accum:   4
+completion:   1536 tokens
+reward:       CADForge fast reward
+```
+
+Override any path without editing the file:
+
+```bash
+SFT_ADAPTER=outputs/qwen35-2b-cadforge-sft-full-20260425 \
+OUT_DIR=outputs/qwen35-2b-cadforge-grpo-from-sft-20260425 \
+training/launch_grpo_after_sft.sh
+```
+
+This direct-adapter GRPO path is the safest first production run. vLLM server mode remains useful after exporting/merging a model path that vLLM can serve cleanly.
+
 ## vLLM Server Mode
 
 The judge recommended normal GRPO with vLLM serve mode, not async mode. The script exposes that path:
 
 ```bash
 python -m vllm.entrypoints.openai.api_server \
-  --model Qwen/Qwen3.5-2B \
+  --model unsloth/Qwen3.5-2B \
   --host 127.0.0.1 \
   --port 8000
 ```
@@ -254,6 +345,7 @@ uv run training/train_grpo_cadforge.py \
   --output-dir outputs/qwen35-2b-cadforge-grpo \
   --hub-model-id sanjuhs/qwen35-2b-cadforge-grpo \
   --push-to-hub \
+  --enable-trackio \
   --reward-backend cadforge \
   --cadforge-reward-mode fast \
   --limit-prompts 256 \

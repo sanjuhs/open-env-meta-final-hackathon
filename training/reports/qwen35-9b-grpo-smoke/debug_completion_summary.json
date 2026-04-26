@@ -1,0 +1,50 @@
+[
+  {
+    "reward_call": 1,
+    "index": 0,
+    "score": 0.21999999999999997,
+    "task_id": "four_leg_chair_700n",
+    "code_chars": 6364,
+    "cadforge_build": 0.0,
+    "cadforge_total": -1.0,
+    "has_fixture": false,
+    "has_cadquery_import": true,
+    "error_kind": "ValueError"
+  },
+  {
+    "reward_call": 1,
+    "index": 1,
+    "score": 0.2799999999999999,
+    "task_id": "four_leg_chair_700n",
+    "code_chars": 5720,
+    "cadforge_build": 0.0,
+    "cadforge_total": -1.0,
+    "has_fixture": true,
+    "has_cadquery_import": true,
+    "error_kind": "SyntaxError"
+  },
+  {
+    "reward_call": 2,
+    "index": 0,
+    "score": 0.21999999999999997,
+    "task_id": "",
+    "code_chars": 4973,
+    "cadforge_build": 0.0,
+    "cadforge_total": -1.0,
+    "has_fixture": false,
+    "has_cadquery_import": true,
+    "error_kind": "NameError"
+  },
+  {
+    "reward_call": 2,
+    "index": 1,
+    "score": 0.21999999999999997,
+    "task_id": "",
+    "code_chars": 5423,
+    "cadforge_build": 0.0,
+    "cadforge_total": -1.0,
+    "has_fixture": false,
+    "has_cadquery_import": true,
+    "error_kind": "SyntaxError"
+  }
+]

@@ -47,6 +47,8 @@ experiment-2-cadforge/reports/*benchmark*.md
 experiment-2-cadforge/outputs/
 training/output/
 training/outputs/
+training/logs/
+training/runpod-info-temp.md
 outputs/
 wandb/
 runs/

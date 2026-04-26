@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.10"
+# dependencies = [
+#     "huggingface_hub",
+#     "hf_transfer",
+# ]
 # ///
 """Smoke-test the CADForge reward backend with one known-good SFT row."""
 
@@ -20,6 +24,19 @@ APP_ROOT = REPO_ROOT / "experiment-2-cadforge"
 DEFAULT_ROW_FILE = APP_ROOT / "data/sft/cadquery_prompt_to_cadquery_train.jsonl"
 DEFAULT_ENV = APP_ROOT / "python_tools/cadquery_env.py"
 DEFAULT_PYTHON = REPO_ROOT / ".venv/bin/python"
+DATASET_REPO = "sanjuhs/cadforge-cadquery-agentic-traces"
+
+
+def resolve_row_file(path: Path) -> Path:
+    if path.exists():
+        return path
+    from huggingface_hub import hf_hub_download
+
+    return Path(hf_hub_download(
+        repo_id=DATASET_REPO,
+        repo_type="dataset",
+        filename="data/sft/cadquery_prompt_to_cadquery_train.jsonl",
+    ))
 
 
 def read_first_row(path: Path) -> dict[str, Any]:
@@ -60,7 +77,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    row = read_first_row(args.row_file)
+    row = read_first_row(resolve_row_file(args.row_file))
     task_id = row.get("task_id") or row.get("task_spec", {}).get("id") or ""
     code = assistant_code(row)
 
