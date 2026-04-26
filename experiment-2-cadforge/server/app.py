@@ -29,11 +29,9 @@ DEMO_TASKS = {
         "broken_code": r'''
 import cadquery as cq
 
-# Weak seed: buildable, but it is missing wheel, axle, holes, and a real fork.
+# Weak seed: buildable blank plate with almost no requested assembly detail.
 plate = cq.Workplane("XY").box(44, 44, 4).translate((0, 0, 2))
-stem = cq.Workplane("XY").cylinder(14, 5).translate((0, 0, 11))
-stub = cq.Workplane("XY").box(24, 16, 12).translate((0, 0, 24))
-fixture = plate.union(stem).union(stub).clean()
+fixture = plate.clean()
 '''.strip(),
         "code": r'''
 import cadquery as cq
@@ -209,7 +207,7 @@ SPACE_HTML = r'''
       }
       .viewer-head h2 { margin: 0; font-size: 22px; }
       .viewer-head p { margin: 5px 0 0; color: #cee4ec; }
-      #viewer { min-height: 410px; background: #eff4f7; }
+      #viewer { min-height: 410px; background: #eff4f7; position: relative; }
       .viewer-foot {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -235,6 +233,29 @@ SPACE_HTML = r'''
       }
       .trace-item strong { display: block; color: #fff; margin-bottom: 4px; }
       .trace-item span { color: #aee1ef; font-size: 13px; }
+      .viewer-legend {
+        position: absolute;
+        display: flex;
+        gap: 10px;
+        left: 14px;
+        top: 14px;
+        z-index: 2;
+        color: #173040;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .viewer-legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.82);
+        box-shadow: 0 8px 24px rgba(16, 39, 54, 0.12);
+      }
+      .swatch { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+      .seed-dot { background: #d65b5b; }
+      .repair-dot { background: #2a9d8f; }
       .band { padding: 36px 34px; }
       .band h2 { font-size: 34px; margin: 0 0 12px; color: #142532; }
       .band p { color: #526170; line-height: 1.55; }
@@ -310,7 +331,12 @@ SPACE_HTML = r'''
             <button class="light-button" id="runDemo">Run repair loop</button>
           </div>
         </div>
-        <div id="viewer"></div>
+        <div id="viewer">
+          <div class="viewer-legend">
+            <span><i class="swatch seed-dot"></i> weak seed</span>
+            <span><i class="swatch repair-dot"></i> repaired CAD</span>
+          </div>
+        </div>
         <div class="trace-strip" id="traceStrip">
           <div class="trace-item"><strong>Step 0</strong><span>Waiting for weak seed.</span></div>
           <div class="trace-item"><strong>Step 1</strong><span>Waiting for repaired CAD.</span></div>
@@ -394,6 +420,7 @@ SPACE_HTML = r'''
       grid.rotation.x = Math.PI / 2;
       scene.add(grid);
       let mesh = null;
+      let currentRun = 0;
 
       function resize() {
         const box = viewer.getBoundingClientRect();
@@ -420,23 +447,36 @@ SPACE_HTML = r'''
       }
 
       async function runDemo() {
+        const runId = ++currentRun;
         const taskId = document.querySelector("#taskSelect").value;
+        clearViewer();
+        document.querySelector("#buildMetric").textContent = "--";
+        document.querySelector("#rewardMetric").textContent = "--";
+        document.querySelector("#editMetric").textContent = "--";
+        document.querySelector("#semanticMetric").textContent = "--";
+        document.querySelector("#runDemo").disabled = true;
         document.querySelector("#viewerStatus").textContent = "Running weak seed, repair, CadQuery build, and reward...";
         document.querySelector("#traceStrip").innerHTML = `
           <div class="trace-item"><strong>Step 0</strong><span>Evaluating weak seed...</span></div>
           <div class="trace-item"><strong>Step 1</strong><span>Waiting for repaired CAD...</span></div>
         `;
-        const response = await fetch("/api/space/repair-loop", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ task_id: taskId })
-        });
-        const payload = await response.json();
-        if (!response.ok || !payload.ok) {
-          document.querySelector("#viewerStatus").textContent = payload.error || "CadQuery build failed.";
-          if (payload.steps) updateTrace(payload.steps);
-          document.querySelector("#rewardJson").textContent = JSON.stringify(payload, null, 2);
-          return;
+        let payload = {};
+        try {
+          const response = await fetch("/api/space/repair-loop", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ task_id: taskId })
+          });
+          payload = await response.json();
+          if (runId !== currentRun) return;
+          if (!response.ok || !payload.ok) {
+            document.querySelector("#viewerStatus").textContent = payload.error || "CadQuery build failed.";
+            if (payload.steps) updateTrace(payload.steps);
+            document.querySelector("#rewardJson").textContent = JSON.stringify(payload, null, 2);
+            return;
+          }
+        } finally {
+          if (runId === currentRun) document.querySelector("#runDemo").disabled = false;
         }
         document.querySelector("#viewerTitle").textContent = payload.label;
         document.querySelector("#viewerStatus").textContent = "Repair loop complete. Reward delta: " + Number(payload.delta_reward || 0).toFixed(3) + ".";
@@ -447,33 +487,56 @@ SPACE_HTML = r'''
         document.querySelector("#semanticMetric").textContent = Number(payload.final.reward.semantic_parts || 0).toFixed(3);
         document.querySelector("#rewardJson").textContent = JSON.stringify(payload, null, 2);
 
-        await renderMeshes(payload, taskId);
+        await renderMeshes(payload, taskId, runId);
       }
 
-      async function renderMeshes(payload, taskId) {
+      function clearViewer() {
         if (mesh) {
           scene.remove(mesh);
+          mesh.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) child.material.dispose();
+          });
           mesh = null;
         }
+      }
+
+      async function renderMeshes(payload, taskId, runId) {
+        clearViewer();
         const group = new THREE.Group();
         const loader = new STLLoader();
+        const geometries = [];
         if (payload.seed && payload.seed.stl_url && payload.steps && payload.steps[0] && payload.steps[0].build > 0) {
           const seedGeometry = await loader.loadAsync(payload.seed.stl_url + "?t=" + Date.now());
+          if (runId !== currentRun) return;
           seedGeometry.computeVertexNormals();
+          seedGeometry.computeBoundingBox();
+          geometries.push(seedGeometry);
           const seedMesh = new THREE.Mesh(
             seedGeometry,
-            new THREE.MeshStandardMaterial({ color: 0xd65b5b, roughness: 0.72, metalness: 0.20, transparent: true, opacity: 0.24 })
+            new THREE.MeshStandardMaterial({ color: 0xd65b5b, roughness: 0.72, metalness: 0.20, transparent: true, opacity: 0.64 })
           );
-          seedMesh.position.x -= 0.015;
           group.add(seedMesh);
         }
         const finalGeometry = await loader.loadAsync(payload.final.stl_url + "?t=" + Date.now());
+        if (runId !== currentRun) return;
         finalGeometry.computeVertexNormals();
+        finalGeometry.computeBoundingBox();
+        geometries.push(finalGeometry);
         const finalMesh = new THREE.Mesh(
           finalGeometry,
           new THREE.MeshStandardMaterial({ color: taskId.includes("stator") ? 0x2f80ed : 0x2a9d8f, roughness: 0.48, metalness: 0.50 })
         );
         group.add(finalMesh);
+        const maxDim = Math.max(...geometries.map((geometry) => {
+          const size = new THREE.Vector3();
+          geometry.boundingBox.getSize(size);
+          return Math.max(size.x, size.y, size.z, 1);
+        }));
+        group.children.forEach((child, index) => {
+          child.geometry.center();
+          child.position.x = group.children.length > 1 ? (index === 0 ? -maxDim * 0.68 : maxDim * 0.68) : 0;
+        });
         mesh = group;
         scene.add(mesh);
         frameObject(mesh);
@@ -489,6 +552,7 @@ SPACE_HTML = r'''
       }
 
       document.querySelector("#runDemo").addEventListener("click", runDemo);
+      document.querySelector("#taskSelect").addEventListener("change", runDemo);
       runDemo();
       renderer.setAnimationLoop(() => {
         controls.update();
