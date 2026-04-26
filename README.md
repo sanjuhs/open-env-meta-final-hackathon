@@ -10,6 +10,7 @@ The agent receives a design request, writes a complete CadQuery Python file, and
 - Mini-blog markdown: [experiment-2-cadforge/CADFORGE_BLOG.md](experiment-2-cadforge/CADFORGE_BLOG.md)
 - Judge rerun notebook: [training/cadforge_openenv_training_colab.ipynb](training/cadforge_openenv_training_colab.ipynb)
 - Full project report: [docs/cadforge-openenv-project-report.md](docs/cadforge-openenv-project-report.md)
+- Self-improving curriculum: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-improving-curriculum.md)
 - Submission checklist: [docs/cadforge-submission-checklist.md](docs/cadforge-submission-checklist.md)
 - Training dataset: [sanjuhs/cadforge-cadquery-agentic-traces](https://huggingface.co/datasets/sanjuhs/cadforge-cadquery-agentic-traces)
 - Strict GRPO model: [sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora](https://huggingface.co/sanjuhs/qwen35-9b-cadforge-grpo-strict-build-lora)
@@ -79,3 +80,13 @@ training/run_strict_9b_grpo.sh
 ```
 
 The final strict build-gated GRPO reward is the key design change: failed builds receive negative reward; successful builds unlock dense topology, semantic, reference, and editability scoring.
+
+## Self-Improvement Loop
+
+CADForge's next curriculum is generated from the model's own failures:
+
+```text
+rollout batch -> reward JSON -> failure classifier -> targeted repair task -> adaptive sampler -> next GRPO batch
+```
+
+For example, a clipped chair answer with `SyntaxError: '(' was never closed` becomes a repair task that asks the model to preserve the structure, close the final union, and assign `fixture`. The next score is based on reward delta, so the environment teaches the model exactly where it failed.

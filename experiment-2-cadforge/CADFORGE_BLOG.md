@@ -142,18 +142,45 @@ The quick eval built two held-out objects:
 
 The failed chair output was clipped before closing the final union. That failure is useful: it gives the next curriculum a concrete target.
 
-## How CADForge Evolves Next
+## How CADForge Improves Itself
 
-The next version should make self-improvement explicit:
+The self-improvement loop is automatic: the environment uses failed rollouts to create the next training distribution.
 
-1. Track failure types per task: syntax, missing fixture, disconnected parts, bad reference similarity, weak editability.
-2. Generate new repair tasks from those failures.
-3. Make the agent fix one failure at a time, then score the delta.
-4. Promote tasks to harder reference-backed GLB cases when build rate improves.
-5. Use vLLM server mode for faster grouped rollouts.
-6. Add AST pre-checks so syntax failures are caught cheaply before full CadQuery execution.
+```text
+rollout batch
+  -> reward JSON
+  -> failure classifier
+  -> targeted repair task generator
+  -> adaptive sampler
+  -> next SFT / GRPO batch
+```
+
+Examples:
+
+- `SyntaxError: '(' was never closed` becomes: "preserve the current chair structure, close the final union, and assign fixture."
+- `AttributeError: Workplane has no cone` becomes: "replace the invented API with cylinders, boxes, lofts, or cuts that CadQuery supports."
+- disconnected caster assembly becomes: "bridge the wheel, axle, fork, and top plate so contact reward improves."
+- weak Markus similarity becomes: "adjust the backrest height, armrests, gas cylinder, star base, and caster proportions."
+
+The next action is scored by reward delta:
+
+```text
+delta_reward = new_total_reward - previous_total_reward
+```
+
+This prevents the model from merely restating plausible CAD. It must repair the concrete failure the environment found.
+
+The curriculum controller then samples more from weak failure types:
+
+```text
+weight = base_weight * (1 - recent_mastery)^2 * difficulty_multiplier
+```
+
+So if the model keeps failing syntax closure, syntax repair appears more often. Once build rate rises, the environment shifts toward harder semantic and reference-similarity tasks.
 
 That turns CADForge into a curriculum engine: the environment watches where the model fails and creates the next training distribution from those failures.
+
+Detailed plan: [docs/cadforge-self-improving-curriculum.md](docs/cadforge-self-improving-curriculum.md)
 
 ## Artifacts
 
